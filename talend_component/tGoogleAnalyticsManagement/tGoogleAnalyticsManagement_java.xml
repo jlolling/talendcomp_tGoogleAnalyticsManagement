@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<COMPONENT>
+	<HEADER 
+	    PLATEFORM="ALL" 
+	    SERIAL="" 
+	    VERSION="2.1" 
+	    STATUS="PROD"
+		COMPATIBILITY="ALL" 
+		AUTHOR="Jan Lolling" 
+		RELEASE_DATE="20140926A"
+		HAS_CONDITIONAL_OUTPUTS="true"
+		STARTABLE="true">
+		<SIGNATURE />
+	</HEADER>
+
+	<FAMILIES>
+		<FAMILY>Business/Google</FAMILY>
+	</FAMILIES>
+
+	<DOCUMENTATION>
+		<URL />
+	</DOCUMENTATION>
+
+	<CONNECTORS>
+		<CONNECTOR CTYPE="FLOW" MAX_INPUT="0" MAX_OUTPUT="0" />
+		<CONNECTOR CTYPE="ITERATE" MAX_INPUT="1" MAX_OUTPUT="0" />
+		<CONNECTOR CTYPE="SUBJOB_OK" MAX_INPUT="1" MAX_OUTPUT="1" />
+		<CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" MAX_OUTPUT="1" />
+		<CONNECTOR CTYPE="COMPONENT_OK" />
+		<CONNECTOR CTYPE="COMPONENT_ERROR" />
+		<CONNECTOR NAME="ACCOUNTS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="WEBPROPERTIES" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="PROFILES" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="SEGMENTS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="GOALS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="GOAL_URL_DEST_STEPS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+		<CONNECTOR NAME="GOAL_EVENT_CONDITIONS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1" BASE_SCHEMA="FLOW" />
+	</CONNECTORS>
+	<PARAMETERS>
+		<PARAMETER NAME="SCHEMA_ACCOUNTS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="1" CONTEXT="ACCOUNTS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" COMMENT="Account ID"/>
+				<COLUMN NAME="ACCOUNT_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="false" COMMENT=""/>
+				<COLUMN NAME="ACCOUNT_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10" NULLABLE="false"/>
+				<COLUMN NAME="ACCOUNT_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+				<COLUMN NAME="ACCOUNT_SELFLINK" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" COMMENT=""/>
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_WEBPROPERTIES" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="2" CONTEXT="WEBPROPERTIES">
+			<TABLE READONLY="true">
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" NULLABLE="false"/>
+				<COLUMN NAME="WEBPROPERTY_INTERNAL_ID" TYPE="id_Long"
+					READONLY="true" CUSTOM="true" LENGTH="22" NULLABLE="false"/>
+				<COLUMN NAME="WEBPROPERTY_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="false"/>
+				<COLUMN NAME="WEBPROPERTY_SITE_URL" TYPE="id_String"
+					READONLY="true" CUSTOM="true" LENGTH="1024" NULLABLE="true"/>
+				<COLUMN NAME="WEBPROPERTY_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10" NULLABLE="false"/>
+				<COLUMN NAME="WEBPROPERTY_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+				<COLUMN NAME="WEBPROPERTY_SELFLINK" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" COMMENT="The link to manage this web property"/>
+				<COLUMN NAME="WEBPROPERTY_LEVEL" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="true" COMMENT="Level for this web property. Possible values are STANDARD or PREMIUM"/>
+				<COLUMN NAME="WEBPROPERTY_INDUSTRY_VERTICAL" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="true" COMMENT="The industry vertical/category selected for this web property"/>
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_PROFILES" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="3" CONTEXT="PROFILES">
+			<TABLE READONLY="true">
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_INTERNAL_ID" TYPE="id_Long"
+					READONLY="true" CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="PROFILE_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="false" />
+				<COLUMN NAME="PROFILE_DEFAULT_PAGE" TYPE="id_String"
+					READONLY="true" CUSTOM="true" LENGTH="1024"/>
+				<COLUMN NAME="PROFILE_EXCLUDE_QUERY_PARAMS" TYPE="id_String"
+					READONLY="true" CUSTOM="true" LENGTH="4000"/>
+				<COLUMN NAME="PROFILE_SITE_SEARCH_QUERY_PARAMS" TYPE="id_String"
+					READONLY="true" CUSTOM="true" LENGTH="4000"/>
+				<COLUMN NAME="PROFILE_SITE_SEARCH_CATEGORY_PARAMS" TYPE="id_String"
+					READONLY="true" CUSTOM="true" LENGTH="4000"/>
+				<COLUMN NAME="PROFILE_CURRENCY" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="4" />
+				<COLUMN NAME="PROFILE_TIMEZONE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32"/>
+				<COLUMN NAME="PROFILE_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10" NULLABLE="false"/>
+				<COLUMN NAME="PROFILE_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+				<COLUMN NAME="PROFILE_SELFLINK" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" COMMENT="The Link to manage this profile"/>
+				<COLUMN NAME="PROFILE_ECOMMERCE_TRACKING" TYPE="id_Boolean" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="true" COMMENT="Indicates whether ecommerce tracking is enabled for this view (profile)"/>
+				<COLUMN NAME="PROFILE_STRIP_SITE_SEARCH_QUERY_PARAMS" TYPE="id_Boolean"
+					READONLY="true" CUSTOM="true" LENGTH="1" COMMENT="Whether or not Analytics will strip search query parameters from the URLs in your reports."/>
+				<COLUMN NAME="PROFILE_STRIP_SITE_SEARCH_CATEGORY_PARAMS" TYPE="id_Boolean"
+					READONLY="true" CUSTOM="true" LENGTH="1" COMMENT="Whether or not Analytics will strip search category parameters from the URLs in your reports."/>
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_SEGMENTS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="4" CONTEXT="SEGMENTS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="SEGMENT_ID" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="SEGMENT_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="false" />
+				<COLUMN NAME="SEGMENT_DEFINITION" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="4000" NULLABLE="false" />
+				<COLUMN NAME="SEGMENT_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+				<COLUMN NAME="SEGMENT_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+				<COLUMN NAME="SEGMENT_SELFLINK" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" COMMENT="The Link to manage this segment"/>
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_GOALS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="5" CONTEXT="GOALS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="GOAL_ID" TYPE="id_String" READONLY="true" COMMENT="Goal ID, is only unique within the profile"
+					CUSTOM="true" LENGTH="128" KEY="true" NULLABLE="false"/>
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web property ID to which this goal belongs."
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_INTERNAL_ID" TYPE="id_Long"  COMMENT="Internal ID for the web property to which this goal belongs."
+					READONLY="true" CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="GOAL_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="128" NULLABLE="false" />
+				<COLUMN NAME="GOAL_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="false"/>
+				<COLUMN NAME="GOAL_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="false"/>
+				<COLUMN NAME="GOAL_ACTIVE" TYPE="id_Boolean" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="false" />
+				<COLUMN NAME="GOAL_TYPE" TYPE="id_String" READONLY="true" COMMENT="Goal type. Possible values are URL_DESTINATION, VISIT_TIME_ON_SITE, VISIT_NUM_PAGES, and EVENT."
+					CUSTOM="true" LENGTH="128" NULLABLE="true" />
+				<COLUMN NAME="GOAL_VALUE" TYPE="id_Float" READONLY="true"
+					CUSTOM="true" LENGTH="12" PRECISION="4" NULLABLE="true" />
+				<COLUMN NAME="VISIT_TIME_ON_SITE_DETAILS_COMP_TYPE" TYPE="id_String" READONLY="true" COMMENT="Type of comparison. Possible values are LESS_THAN or GREATER_THAN."
+					CUSTOM="true" LENGTH="16" NULLABLE="true" />
+				<COLUMN NAME="VISIT_TIME_ON_SITE_DETAILS_COMP_VALUE" TYPE="id_Long" READONLY="true" COMMENT="Value used for this comparison."
+					CUSTOM="true" LENGTH="22" NULLABLE="true" />
+				<COLUMN NAME="VISIT_NUM_PAGES_DETAILS_COMP_TYPE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="true" />
+				<COLUMN NAME="VISIT_NUM_PAGES_DETAILS_COMP_VALUE" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_DETAILS_URL" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_DETAILS_CASE_SENSITIVE" TYPE="id_Boolean" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_DETAILS_MATCH_TYPE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_DETAILS_FIRST_STEP_REQUIERED" TYPE="id_Boolean" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="true" />
+				<COLUMN NAME="GOAL_SELFLINK" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" COMMENT="The Link to manage this goal"/>
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_GOAL_URL_DEST_STEP" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="6" CONTEXT="GOAL_URL_DEST_STEPS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="GOAL_ID" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="128" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web property ID to which this goal belongs."
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_INTERNAL_ID" TYPE="id_Long"  COMMENT="Internal ID for the web property to which this goal belongs."
+					READONLY="true" CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="URL_DEST_STEP_INDEX" TYPE="id_Integer" READONLY="true"
+					CUSTOM="true" LENGTH="10" KEY="true" NULLABLE="false" COMMENT="Index of the steps within its goal url destination"/>
+				<COLUMN NAME="URL_DEST_STEP_NAME" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="128" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_STEP_NUMBER" TYPE="id_Integer" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="true" />
+				<COLUMN NAME="URL_DEST_STEP_URL" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="1024" NULLABLE="true" />
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_GOAL_EVENT_CONDITION" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="6" CONTEXT="GOAL_EVENT_CONDITIONS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="GOAL_ID" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="128" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID to which this goal belongs."
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web property ID to which this goal belongs."
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_INTERNAL_ID" TYPE="id_Long"  COMMENT="Internal ID for the web property to which this goal belongs."
+					READONLY="true" CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="EVENT_CONDITION_INDEX" TYPE="id_Integer" READONLY="true"
+					CUSTOM="true" LENGTH="10" KEY="true" NULLABLE="false" COMMENT="Index of the event condition within its goal" />
+				<COLUMN NAME="EVENT_CONDITION_COMP_TYPE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="128" NULLABLE="true" />
+				<COLUMN NAME="EVENT_CONDITION_COMP_VALUE" TYPE="id_Long" READONLY="true"
+					CUSTOM="true" LENGTH="22" NULLABLE="true" />
+				<COLUMN NAME="EVENT_CONDITION_EXPRESSION" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="512" NULLABLE="true" />
+				<COLUMN NAME="EVENT_CONDITION_MATCH_TYPE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="true" />
+				<COLUMN NAME="EVENT_CONDITION_TYPE" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="32" NULLABLE="true" />
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER FIELD="TEXT" NAME="APPLICATION_NAME" NUM_ROW="10"
+			GROUP="CLIENT">
+			<DEFAULT>"Fetch Analytics Meta Data"</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="TEXT" NAME="SERVICE_ACCOUNT_EMAIL"
+			NUM_ROW="20" REQUIRED="true" GROUP="CLIENT">
+			<DEFAULT>"the-service-account-id@developer.gserviceaccount.com"</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="FILE" NAME="KEY_FILE" NUM_ROW="30"
+			REQUIRED="true" GROUP="CLIENT">
+			<DEFAULT>"/path/to/service-account-privatekey-file.p12"</DEFAULT>
+		</PARAMETER>
+	</PARAMETERS>
+	<ADVANCED_PARAMETERS>
+		<PARAMETER FIELD="TEXT" NAME="TIMEOUT_IN_SEC" NUM_ROW="10">
+			<DEFAULT>240</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="TEXT" NAME="TIME_OFFSET" NUM_ROW="15">
+			<DEFAULT>10000</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="CHECK" NAME="KEEP_CLIENT" NUM_ROW="40">
+			<DEFAULT>true</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="TEXT" NAME="KEEP_CLIENT_KEY" NUM_ROW="40"
+			SHOW_IF="KEEP_CLIENT == 'true'">
+		</PARAMETER>
+	</ADVANCED_PARAMETERS>
+	<CODEGENERATION>
+		<IMPORTS>
+			<IMPORT NAME="Google Analytics"
+				MODULE="cimt.talendcomp.gamanage-2.1-jar-with-dependencies.jar"
+				REQUIRED="true" />
+		</IMPORTS>
+	</CODEGENERATION>
+	<RETURNS>
+		<RETURN AVAILABILITY="AFTER" NAME="ACCOUNTS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="WEBPROPERTIES_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="PROFILES_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="SEGMENTS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="GOALS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="GOAL_URL_DEST_STEPS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="GOAL_EVENT_CONDITIONS_NB_LINE" TYPE="id_Integer" />
+	</RETURNS>
+</COMPONENT>
