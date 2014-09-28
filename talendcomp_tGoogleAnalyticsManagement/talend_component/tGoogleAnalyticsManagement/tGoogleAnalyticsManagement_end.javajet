@@ -1,0 +1,18 @@
+<%@ jet 
+	imports="
+		org.talend.core.model.process.INode 
+		org.talend.designer.codegen.config.CodeGeneratorArgument
+	" 
+%>
+<% 
+    CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
+    INode node = (INode)codeGenArgument.getArgument();
+    String cid = node.getUniqueName(); %>
+	} // close while from output connection of <%=cid%> 
+	globalMap.put("<%=cid%>_ACCOUNTS_NB_LINE", countAccounts_<%=cid%>);
+	globalMap.put("<%=cid%>_WEBPROPERTIES_NB_LINE", countWebproperties_<%=cid%>);
+	globalMap.put("<%=cid%>_PROFILES_NB_LINE", countProfiles_<%=cid%>);
+	globalMap.put("<%=cid%>_SEGMENTS_NB_LINE", countSegments_<%=cid%>);
+	globalMap.put("<%=cid%>_GOALS_NB_LINE", countGoals_<%=cid%>);
+	globalMap.put("<%=cid%>_GOAL_URL_DEST_STEPS_NB_LINE", countGoalUrlDestSteps_<%=cid%>);
+	globalMap.put("<%=cid%>_GOAL_EVENT_CONDITIONS_NB_LINE", countGoalEventConditions_<%=cid%>);
