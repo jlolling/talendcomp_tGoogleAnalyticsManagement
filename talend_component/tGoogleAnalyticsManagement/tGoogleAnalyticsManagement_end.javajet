@@ -16,3 +16,4 @@
 	globalMap.put("<%=cid%>_GOALS_NB_LINE", countGoals_<%=cid%>);
 	globalMap.put("<%=cid%>_GOAL_URL_DEST_STEPS_NB_LINE", countGoalUrlDestSteps_<%=cid%>);
 	globalMap.put("<%=cid%>_GOAL_EVENT_CONDITIONS_NB_LINE", countGoalEventConditions_<%=cid%>);
+	globalMap.put("<%=cid%>_REPORT_COLUMNS_NB_LINE", countColumns_<%=cid%>);

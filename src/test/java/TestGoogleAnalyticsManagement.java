@@ -5,7 +5,7 @@ import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Segment;
 import com.google.api.services.analytics.model.Webproperty;
 
-import de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement;
+import de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement;
 
 public class TestGoogleAnalyticsManagement {
 
@@ -44,9 +44,6 @@ public class TestGoogleAnalyticsManagement {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		System.out.println("count accounts:" + gm.getListAccounts().size());
-		System.out.println("count webproperties:" + gm.getListWebProperties().size());
-		System.out.println("count profiles:" + gm.getListProfiles().size());
 //		System.out.println("count segments:" + gm.getListSegments().size());
 		while (gm.next()) {
 			System.out.println("-----------------------------------------------");
