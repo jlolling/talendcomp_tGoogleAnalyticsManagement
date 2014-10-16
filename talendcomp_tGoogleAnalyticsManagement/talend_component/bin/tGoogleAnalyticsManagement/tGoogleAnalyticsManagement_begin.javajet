@@ -27,6 +27,7 @@
     List<? extends IConnection> connsGoals = node.getOutgoingConnections("GOALS");
     List<? extends IConnection> connsGoalUrlDestSteps = node.getOutgoingConnections("GOAL_URL_DEST_STEPS");
     List<? extends IConnection> connsGoalEventConditions = node.getOutgoingConnections("GOAL_EVENT_CONDITIONS");
+    List<? extends IConnection> connsColumns = node.getOutgoingConnections("REPORT_COLUMNS");
     String accountRowName = null;
     String webpropertyRowName = null;
     String profileRowName = null;
@@ -34,14 +35,15 @@
     String goalRowName = null;
     String goalUrlDestStepsRowName = null;
     String goalEventConditionsRowName = null;
+    String columnsRowName = null;
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
-	de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
+	de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
 	if (<%=cid%> == null) {
-		<%=cid%> = new de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement();
+		<%=cid%> = new de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement();
 <% } else {%>
-	    de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = new de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement();
+	    de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = new de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement();
 <% }%>
 <% if (applicationName != null && applicationName.trim().isEmpty() == false) {%>
 	    <%=cid%>.setApplicationName(<%=applicationName%>);
@@ -65,7 +67,7 @@
 	    }
 	    globalMap.put("<%=cid%>", <%=cid%>);
 <% if ("true".equals(keepClient)) {%>
-	    de.cimt.talendcomp.googleanalytics.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
+	    de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
 	} // end if (<%=cid%> == null) {
 <% }%>
 
@@ -111,31 +113,42 @@
     		goalEventConditionsRowName = connTemp.getName();
     	}
     }
+    if (connsColumns != null && connsColumns.size() > 0) {
+    	IConnection connTemp = connsColumns.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		columnsRowName = connTemp.getName();
+    	}
+    }
 %>
     <%=cid%>.reset();
 	try {
-<%  if (profileRowName != null) {%>
+<%  if (profileRowName != null) { %>
         // collect profiles, webproperties and accounts
 	    System.out.println("Collect accounts, web properties and profiles..."); 
 		<%=cid%>.collectProfiles();
-<%  } else if (webpropertyRowName != null) {%>
+<%  } else if (webpropertyRowName != null) { %>
 	    // collect webproperties and accounts
 	    System.out.println("Collect accounts and web properties..."); 
 		<%=cid%>.collectWebProperties();
-<%  } else if (accountRowName != null) {%>
+<%  } else if (accountRowName != null) { %>
 	    // collect accounts
 	    System.out.println("Collect accounts..."); 
 		<%=cid%>.collectAccounts();
 <%  }
-    if (segmentRowName != null) {%>
+    if (segmentRowName != null) { %>
 	    // collect segments
 	    System.out.println("Collect segments..."); 
 		<%=cid%>.collectSegments();
 <%  }
-    if (goalRowName != null || goalUrlDestStepsRowName != null || goalEventConditionsRowName != null) {%>
+    if (goalRowName != null || goalUrlDestStepsRowName != null || goalEventConditionsRowName != null) { %>
 	    // collect goals
 	    System.out.println("Collect goals..."); 
 		<%=cid%>.collectGoals();
+<%  }
+    if (columnsRowName != null) { %>
+	    // collect column metadata
+	    System.out.println("Collect column meta data..."); 
+		<%=cid%>.collectColumns();
 <%  }
 %>
 	    System.out.println("Collecting data finished.");
@@ -150,9 +163,10 @@
     int countGoals_<%=cid%> = 0;
     int countGoalUrlDestSteps_<%=cid%> = 0;
     int countGoalEventConditions_<%=cid%> = 0;
+    int countColumns_<%=cid%> = 0;
 	while (<%=cid%>.next()) {
 		// loop through all elements
-<%  if (accountRowName != null) {%>
+<%  if (accountRowName != null) { %>
 		if (<%=cid%>.hasCurrentAccount()) {
 		    <%=accountRowName%> = new <%=accountRowName%>Struct();
 			<%=accountRowName%>.ACCOUNT_ID = Long.parseLong(<%=cid%>.getCurrentAccount().getId());
@@ -164,8 +178,8 @@
 		} else {
 			<%=accountRowName%> = null;
 		}
-<%  }%>
-<%  if (webpropertyRowName != null) {%>
+<%  } %>
+<%  if (webpropertyRowName != null) { %>
 		if (<%=cid%>.hasCurrentWebproperty()) {
 		    <%=webpropertyRowName%> = new <%=webpropertyRowName%>Struct();
 			<%=webpropertyRowName%>.ACCOUNT_ID = Long.parseLong(<%=cid%>.getCurrentWebproperty().getAccountId());
@@ -182,8 +196,8 @@
 		} else {
 			<%=webpropertyRowName%> = null;
 		}
-<%  }%>
-<%  if (profileRowName != null) {%>
+<%  } %>
+<%  if (profileRowName != null) { %>
 		if (<%=cid%>.hasCurrentProfile()) {
 		    <%=profileRowName%> = new <%=profileRowName%>Struct();
 			<%=profileRowName%>.ACCOUNT_ID = Long.parseLong(<%=cid%>.getCurrentProfile().getAccountId());
@@ -207,8 +221,8 @@
 		} else {
 			<%=profileRowName%> = null;
 		}
-<%  }%>
-<%  if (segmentRowName != null) {%>
+<%  } %>
+<%  if (segmentRowName != null) { %>
 		if (<%=cid%>.hasCurrentSegment()) {
 		    <%=segmentRowName%> = new <%=segmentRowName%>Struct();
 			<%=segmentRowName%>.SEGMENT_ID = <%=cid%>.getCurrentSegment().getSegmentId();
@@ -220,8 +234,8 @@
 		} else {
 			<%=segmentRowName%> = null;
 		}
-<%  }%>
-<%  if (goalRowName != null) {%>
+<%  } %>
+<%  if (goalRowName != null) { %>
 		if (<%=cid%>.hasCurrentGoal()) {
 		    <%=goalRowName%> = new <%=goalRowName%>Struct();
 			<%=goalRowName%>.GOAL_ID = <%=cid%>.getCurrentGoal().getId();
@@ -248,8 +262,8 @@
 		} else {
 			<%=goalRowName%> = null;
 		}
-<%  }%>
-<%  if (goalUrlDestStepsRowName != null) {%>
+<%  } %>
+<%  if (goalUrlDestStepsRowName != null) { %>
 		if (<%=cid%>.hasCurrentGoalUrlDestinationStep()) {
 		    <%=goalUrlDestStepsRowName%> = new <%=goalUrlDestStepsRowName%>Struct();
 			<%=goalUrlDestStepsRowName%>.GOAL_ID = <%=cid%>.getCurrentGoalUrlDestinationStep().goal.getId();
@@ -265,8 +279,8 @@
 		} else {
 			<%=goalUrlDestStepsRowName%> = null;
 		}
-<%  }%>
-<%  if (goalEventConditionsRowName != null) {%>
+<%  } %>
+<%  if (goalEventConditionsRowName != null) { %>
 		if (<%=cid%>.hasCurrentGoalEventCondition()) {
 		    <%=goalEventConditionsRowName%> = new <%=goalEventConditionsRowName%>Struct();
 			<%=goalEventConditionsRowName%>.GOAL_ID = <%=cid%>.getCurrentGoalEventCondition().goal.getId();
@@ -284,4 +298,22 @@
 		} else {
 			<%=goalEventConditionsRowName%> = null;
 		}
-<%  }%>	
+<%  } %>
+<%  if (columnsRowName != null) { %>	
+		if (<%=cid%>.hasCurrentColumn()) {
+		   <%=columnsRowName%> = new <%=columnsRowName%>Struct();
+		   com.google.api.services.analytics.model.Column column = <%=cid%>.getCurrentColumn();
+		   <%=columnsRowName%>.COL_TYPE = column.getAttributes().get("type");
+		   <%=columnsRowName%>.COL_API_NAME = column.getId();
+		   <%=columnsRowName%>.COL_UI_NAME = column.getAttributes().get("uiName");
+		   <%=columnsRowName%>.COL_DESCRIPTION = column.getAttributes().get("description");
+		   <%=columnsRowName%>.COL_DATA_TYPE = column.getAttributes().get("dataType");
+		   <%=columnsRowName%>.COL_GROUP = column.getAttributes().get("group");
+		   <%=columnsRowName%>.COL_STATUS = column.getAttributes().get("status");
+		   <%=columnsRowName%>.COL_REPLACED_BY = column.getAttributes().get("replacedBy");
+		   <%=columnsRowName%>.COL_CALCULATION = column.getAttributes().get("calculation");
+			countColumns_<%=cid%>++;
+		} else {
+			<%=columnsRowName%> = null;
+		}
+<%  } %>
