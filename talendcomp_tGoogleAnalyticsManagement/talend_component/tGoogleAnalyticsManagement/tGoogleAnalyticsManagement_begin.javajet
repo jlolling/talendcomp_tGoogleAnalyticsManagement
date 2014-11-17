@@ -28,6 +28,7 @@
     List<? extends IConnection> connsGoalUrlDestSteps = node.getOutgoingConnections("GOAL_URL_DEST_STEPS");
     List<? extends IConnection> connsGoalEventConditions = node.getOutgoingConnections("GOAL_EVENT_CONDITIONS");
     List<? extends IConnection> connsColumns = node.getOutgoingConnections("REPORT_COLUMNS");
+    List<? extends IConnection> connsUnsampledReports = node.getOutgoingConnections("UNSAMPLED_REPORTS");
     String accountRowName = null;
     String webpropertyRowName = null;
     String profileRowName = null;
@@ -36,6 +37,7 @@
     String goalUrlDestStepsRowName = null;
     String goalEventConditionsRowName = null;
     String columnsRowName = null;
+    String unsampledReportsRowName = null;
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
@@ -119,6 +121,12 @@
     		columnsRowName = connTemp.getName();
     	}
     }
+    if (connsUnsampledReports != null && connsUnsampledReports.size() > 0) {
+    	IConnection connTemp = connsUnsampledReports.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		unsampledReportsRowName = connTemp.getName();
+    	}
+    }
 %>
     <%=cid%>.reset();
 	try {
@@ -150,6 +158,11 @@
 	    System.out.println("Collect column meta data..."); 
 		<%=cid%>.collectColumns();
 <%  }
+    if (unsampledReportsRowName != null) { %>
+	    // collect unsampled reports
+	    System.out.println("Collect unsampled reports..."); 
+		<%=cid%>.collectUnsampledReports();
+<%  }
 %>
 	    System.out.println("Collecting data finished.");
     } catch (Exception e) {
@@ -164,6 +177,7 @@
     int countGoalUrlDestSteps_<%=cid%> = 0;
     int countGoalEventConditions_<%=cid%> = 0;
     int countColumns_<%=cid%> = 0;
+    int countUnsampledReports_<%=cid%> = 0;
 	while (<%=cid%>.next()) {
 		// loop through all elements
 <%  if (accountRowName != null) { %>
@@ -315,5 +329,33 @@
 			countColumns_<%=cid%>++;
 		} else {
 			<%=columnsRowName%> = null;
+		}
+<%  } %>
+<%  if (unsampledReportsRowName != null) { %>	
+		if (<%=cid%>.hasCurrentUnsampledReport()) {
+		   <%=unsampledReportsRowName%> = new <%=unsampledReportsRowName%>Struct();
+		   com.google.api.services.analytics.model.UnsampledReport report = <%=cid%>.getCurrentUnsampledReport();
+		   <%=unsampledReportsRowName%>.REPORT_ID = report.getId();
+		   <%=unsampledReportsRowName%>.PROFILE_ID = Long.parseLong(report.getProfileId());
+		   <%=unsampledReportsRowName%>.ACCOUNT_ID = Long.parseLong(report.getAccountId());
+		   <%=unsampledReportsRowName%>.WEBPROPERTY_ID = report.getWebPropertyId();
+		   <%=unsampledReportsRowName%>.REPORT_CREATED = new java.util.Date(report.getCreated().getValue());
+		   <%=unsampledReportsRowName%>.REPORT_UPDATED = new java.util.Date(report.getUpdated().getValue());
+		   <%=unsampledReportsRowName%>.REPORT_TITLE = report.getTitle();
+		   <%=unsampledReportsRowName%>.REPORT_START_DATE = TalendDate.parseDate("yyyy-MM-dd", report.getStartDate());
+		   <%=unsampledReportsRowName%>.REPORT_END_DATE = TalendDate.parseDate("yyyy-MM-dd", report.getEndDate());
+		   <%=unsampledReportsRowName%>.REPORT_METRICS = report.getMetrics();
+		   <%=unsampledReportsRowName%>.REPORT_DIMENSIONS = report.getDimensions();
+		   <%=unsampledReportsRowName%>.REPORT_FILTERS = report.getFilters();
+		   <%=unsampledReportsRowName%>.REPORT_SEGMENT = report.getSegment();
+		   <%=unsampledReportsRowName%>.REPORT_STATUS = report.getStatus();
+		   <%=unsampledReportsRowName%>.REPORT_DOWNLOAD_TYPE = report.getDownloadType();
+		   <%=unsampledReportsRowName%>.REPORT_CLOUDSTORAGE_BUCKET_ID = (report.getCloudStorageDownloadDetails() != null ? report.getCloudStorageDownloadDetails().getBucketId() : null); 
+		   <%=unsampledReportsRowName%>.REPORT_CLOUDSTORAGE_OBJECT_ID = (report.getCloudStorageDownloadDetails() != null ? report.getCloudStorageDownloadDetails().getObjectId() : null); 
+		   <%=unsampledReportsRowName%>.REPORT_DRIVE_DOCUMENT_ID = (report.getDriveDownloadDetails() != null ? report.getDriveDownloadDetails().getDocumentId() : null);
+		   <%=unsampledReportsRowName%>.REPORT_SELFLINK = report.getSelfLink();
+			countUnsampledReports_<%=cid%>++;
+		} else {
+			<%=unsampledReportsRowName%> = null;
 		}
 <%  } %>
