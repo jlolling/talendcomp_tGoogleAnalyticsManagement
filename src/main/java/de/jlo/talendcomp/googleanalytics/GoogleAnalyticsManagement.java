@@ -33,6 +33,8 @@ import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Profiles;
 import com.google.api.services.analytics.model.Segment;
 import com.google.api.services.analytics.model.Segments;
+import com.google.api.services.analytics.model.UnsampledReport;
+import com.google.api.services.analytics.model.UnsampledReports;
 import com.google.api.services.analytics.model.Webproperties;
 import com.google.api.services.analytics.model.Webproperty;
 
@@ -59,6 +61,7 @@ public class GoogleAnalyticsManagement {
 	private List<GoalUrlDestinationStepWrapper> listGoalUrlDestinationSteps;
 	private List<GoalEventConditionWrapper> listGoalEventConditions;
 	private List<Column> listColumns;
+	private List<UnsampledReport> listUnsampledReports;
 	private long mainWaitInterval = 2000;
 	private long innerLoopWaitInterval = 500;
 	private int maxRows = 0;
@@ -159,6 +162,7 @@ public class GoogleAnalyticsManagement {
 		listGoals = null;
 		listGoalEventConditions = null;
 		listGoalUrlDestinationSteps = null;
+		listUnsampledReports = null;
 		maxRows = 0;
 		currentIndex = 0;
 	}
@@ -568,6 +572,45 @@ public class GoogleAnalyticsManagement {
 		}
 		if (currentIndex <= listColumns.size()) {
 			return listColumns.get(currentIndex - 1);
+		} else {
+			return null;
+		}
+	}
+
+	public void collectUnsampledReports() throws Exception {
+		if (listProfiles == null) {
+			collectProfiles();
+		}
+		listUnsampledReports = new ArrayList<UnsampledReport>();
+		for (Profile profile : listProfiles) {
+			Thread.sleep(innerLoopWaitInterval);
+			UnsampledReports reports = analyticsClient.management().unsampledReports().list(
+				      profile.getAccountId(),
+				      profile.getWebPropertyId(),
+				      profile.getId()).execute();
+			if (reports != null && reports.getItems() != null) {
+				for (UnsampledReport report : reports.getItems()) {
+					listUnsampledReports.add(report);
+				}
+				setMaxRows(listUnsampledReports.size());
+			}
+		}
+	}
+	
+	public boolean hasCurrentUnsampledReport() {
+		if (listUnsampledReports != null) {
+			return currentIndex <= listUnsampledReports.size();
+		} else {
+			return false;
+		}
+	}
+	
+	public UnsampledReport getCurrentUnsampledReport() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("Call collectUnsampledReports before!");
+		}
+		if (currentIndex <= listUnsampledReports.size()) {
+			return listUnsampledReports.get(currentIndex - 1);
 		} else {
 			return null;
 		}
