@@ -12,14 +12,17 @@
     CodeGeneratorArgument codeGenArgument = (CodeGeneratorArgument) argument;
     INode node = (INode) codeGenArgument.getArgument();
     String cid = node.getUniqueName();
+    boolean useServiceAccount = "SERVICE_ACCOUNT".equals(ElementParameterParser.getValue(node, "__AUTHENTICATION_METHOD__"));
+    String clientSecretFile = ElementParameterParser.getValue(node, "__CLIENT_SECRET_FILE__");
+    String userEmail = ElementParameterParser.getValue(node, "__USER_ACCOUNT_EMAIL__");
     String applicationName = ElementParameterParser.getValue(node, "__APPLICATION_NAME__");
-	String accountEmail = ElementParameterParser.getValue(node, "__SERVICE_ACCOUNT_EMAIL__");
-	String keyFile = ElementParameterParser.getValue(node, "__KEY_FILE__");
-	String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_IN_SEC__");
-	String timeOffset = ElementParameterParser.getValue(node, "__TIME_OFFSET__");
-	String keepClient = ElementParameterParser.getValue(node, "__KEEP_CLIENT__");
-	String keepClientName = ElementParameterParser.getValue(node, "__KEEP_CLIENT_KEY__");
-	keepClientName = keepClientName != null && keepClientName.isEmpty() == false ? keepClientName : "\"\"";
+	 String accountEmail = ElementParameterParser.getValue(node, "__SERVICE_ACCOUNT_EMAIL__");
+	 String keyFile = ElementParameterParser.getValue(node, "__KEY_FILE__");
+	 String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_IN_SEC__");
+	 String timeOffset = ElementParameterParser.getValue(node, "__TIME_OFFSET__");
+	 String keepClient = ElementParameterParser.getValue(node, "__KEEP_CLIENT__");
+	 String keepClientName = ElementParameterParser.getValue(node, "__KEEP_CLIENT_KEY__");
+	 keepClientName = keepClientName != null && keepClientName.isEmpty() == false ? keepClientName : "\"\"";
     List<? extends IConnection> connsAccounts = node.getOutgoingConnections("ACCOUNTS");
     List<? extends IConnection> connsWebproperties = node.getOutgoingConnections("WEBPROPERTIES");
     List<? extends IConnection> connsProfiles = node.getOutgoingConnections("PROFILES");
@@ -41,18 +44,25 @@
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
-	de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
+	de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement <%=cid%> = de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
 	if (<%=cid%> == null) {
-		<%=cid%> = new de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement();
+		<%=cid%> = new de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement();
 <% } else {%>
-	    de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement <%=cid%> = new de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement();
+	    de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement <%=cid%> = new de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement();
 <% }%>
 <% if (applicationName != null && applicationName.trim().isEmpty() == false) {%>
 	    <%=cid%>.setApplicationName(<%=applicationName%>);
 <% }%>
         // setup credentials
-	    <%=cid%>.setAccountEmail(<%=accountEmail%>);
-	    <%=cid%>.setKeyFile(<%=keyFile%>);
+      <%=cid%>.setUseServiceAccount(<%=useServiceAccount%>);
+<%  if (useServiceAccount) { %>
+        // setup credentials with service account
+		<%=cid%>.setAccountEmail(<%=accountEmail%>);
+		<%=cid%>.setKeyFile(<%=keyFile%>);
+<% } else { %>
+		<%=cid%>.setAccountEmail(<%=userEmail%>);
+		<%=cid%>.setClientSecretFile(<%=clientSecretFile%>);
+<% } %> 
 <% if (timeout != null && timeout.trim().isEmpty() == false) {%>
 	    <%=cid%>.setTimeoutInSeconds(<%=timeout%>);
 <% }%>
@@ -69,7 +79,7 @@
 	    }
 	    globalMap.put("<%=cid%>", <%=cid%>);
 <% if ("true".equals(keepClient)) {%>
-	    de.jlo.talendcomp.googleanalytics.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
+	    de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
 	} // end if (<%=cid%> == null) {
 <% }%>
 
@@ -132,35 +142,28 @@
 	try {
 <%  if (profileRowName != null) { %>
         // collect profiles, webproperties and accounts
-	    System.out.println("Collect accounts, web properties and profiles..."); 
 		<%=cid%>.collectProfiles();
 <%  } else if (webpropertyRowName != null) { %>
 	    // collect webproperties and accounts
-	    System.out.println("Collect accounts and web properties..."); 
 		<%=cid%>.collectWebProperties();
 <%  } else if (accountRowName != null) { %>
 	    // collect accounts
-	    System.out.println("Collect accounts..."); 
 		<%=cid%>.collectAccounts();
 <%  }
     if (segmentRowName != null) { %>
 	    // collect segments
-	    System.out.println("Collect segments..."); 
 		<%=cid%>.collectSegments();
 <%  }
     if (goalRowName != null || goalUrlDestStepsRowName != null || goalEventConditionsRowName != null) { %>
 	    // collect goals
-	    System.out.println("Collect goals..."); 
 		<%=cid%>.collectGoals();
 <%  }
     if (columnsRowName != null) { %>
 	    // collect column metadata
-	    System.out.println("Collect column meta data..."); 
 		<%=cid%>.collectColumns();
 <%  }
     if (unsampledReportsRowName != null) { %>
 	    // collect unsampled reports
-	    System.out.println("Collect unsampled reports..."); 
 		<%=cid%>.collectUnsampledReports();
 <%  }
 %>
@@ -182,7 +185,7 @@
 		// loop through all elements
 <%  if (accountRowName != null) { %>
 		if (<%=cid%>.hasCurrentAccount()) {
-		    <%=accountRowName%> = new <%=accountRowName%>Struct();
+		   <%=accountRowName%> = new <%=accountRowName%>Struct();
 			<%=accountRowName%>.ACCOUNT_ID = Long.parseLong(<%=cid%>.getCurrentAccount().getId());
 			<%=accountRowName%>.ACCOUNT_NAME = <%=cid%>.getCurrentAccount().getName();
 			<%=accountRowName%>.ACCOUNT_CREATED = <%=cid%>.getCurrentAccount().getCreated() != null ? new java.util.Date(<%=cid%>.getCurrentAccount().getCreated().getValue()) : null;
@@ -342,12 +345,6 @@
 		   <%=unsampledReportsRowName%>.REPORT_CREATED = new java.util.Date(report.getCreated().getValue());
 		   <%=unsampledReportsRowName%>.REPORT_UPDATED = new java.util.Date(report.getUpdated().getValue());
 		   <%=unsampledReportsRowName%>.REPORT_TITLE = report.getTitle();
-		   <%=unsampledReportsRowName%>.REPORT_START_DATE = TalendDate.parseDate("yyyy-MM-dd", report.getStartDate());
-		   <%=unsampledReportsRowName%>.REPORT_END_DATE = TalendDate.parseDate("yyyy-MM-dd", report.getEndDate());
-		   <%=unsampledReportsRowName%>.REPORT_METRICS = report.getMetrics();
-		   <%=unsampledReportsRowName%>.REPORT_DIMENSIONS = report.getDimensions();
-		   <%=unsampledReportsRowName%>.REPORT_FILTERS = report.getFilters();
-		   <%=unsampledReportsRowName%>.REPORT_SEGMENT = report.getSegment();
 		   <%=unsampledReportsRowName%>.REPORT_STATUS = report.getStatus();
 		   <%=unsampledReportsRowName%>.REPORT_DOWNLOAD_TYPE = report.getDownloadType();
 		   <%=unsampledReportsRowName%>.REPORT_CLOUDSTORAGE_BUCKET_ID = (report.getCloudStorageDownloadDetails() != null ? report.getCloudStorageDownloadDetails().getBucketId() : null); 
