@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="4.0" 
+	    VERSION="4.1" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20141117A"
+		RELEASE_DATE="20141223A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -28,6 +28,7 @@
 		<CONNECTOR CTYPE="SUBJOB_ERROR" MAX_INPUT="1" MAX_OUTPUT="1" />
 		<CONNECTOR CTYPE="COMPONENT_OK" />
 		<CONNECTOR CTYPE="COMPONENT_ERROR" />
+		<CONNECTOR CTYPE="RUN_IF" />
 		<CONNECTOR NAME="ACCOUNTS" CTYPE="FLOW" MAX_INPUT="0"
 			MAX_OUTPUT="1" LINE_STYLE="1" />
 		<CONNECTOR NAME="WEBPROPERTIES" CTYPE="FLOW" MAX_INPUT="0"
@@ -52,13 +53,47 @@
 			GROUP="CLIENT">
 			<DEFAULT>"Fetch Analytics Meta Data"</DEFAULT>
 		</PARAMETER>
-		<PARAMETER FIELD="TEXT" NAME="SERVICE_ACCOUNT_EMAIL"
-			NUM_ROW="20" REQUIRED="true" GROUP="CLIENT">
-			<DEFAULT>"the-service-account-id@developer.gserviceaccount.com"</DEFAULT>
+		<PARAMETER 
+			FIELD="CLOSED_LIST" 
+			NAME="AUTHENTICATION_METHOD" 
+			NUM_ROW="15" 
+			REQUIRED="true" 
+			GROUP="CLIENT">
+	    	<ITEMS DEFAULT="SERVICE_ACCOUNT">
+	    		<ITEM NAME="SERVICE_ACCOUNT" VALUE="SERVICE_ACCOUNT" />
+	    		<ITEM NAME="APPLICATION_CLIENT_ID" VALUE="APPLICATION_CLIENT_ID" />
+	    	</ITEMS>
 		</PARAMETER>
-		<PARAMETER FIELD="FILE" NAME="KEY_FILE" NUM_ROW="30"
-			REQUIRED="true" GROUP="CLIENT">
-			<DEFAULT></DEFAULT>
+		<PARAMETER 
+			FIELD="TEXT" 
+			NAME="SERVICE_ACCOUNT_EMAIL" 
+			NUM_ROW="20" 
+			REQUIRED="true" 
+			GROUP="CLIENT" 
+			SHOW_IF="AUTHENTICATION_METHOD == 'SERVICE_ACCOUNT'">
+			<DEFAULT>"[service-account-id]developer.gserviceaccount.com"</DEFAULT>
+		</PARAMETER>
+		<PARAMETER 
+			FIELD="FILE" 
+			NAME="KEY_FILE" 
+			NUM_ROW="21" 
+			REQUIRED="true" 
+			GROUP="CLIENT" 
+			SHOW_IF="AUTHENTICATION_METHOD == 'SERVICE_ACCOUNT'">
+			<DEFAULT>"/tmp/76548c6bc96518473d7e425e1415a14e495d34eb-privatekey.p12"</DEFAULT>
+		</PARAMETER>
+		<PARAMETER 
+			FIELD="TEXT" 
+			NAME="USER_ACCOUNT_EMAIL" 
+			NUM_ROW="20" 
+			REQUIRED="true" 
+			GROUP="CLIENT" 
+			SHOW_IF="AUTHENTICATION_METHOD == 'APPLICATION_CLIENT_ID'">
+			<DEFAULT>"yourmail@gmail.com"</DEFAULT>
+		</PARAMETER>
+		<PARAMETER FIELD="FILE" NAME="CLIENT_SECRET_FILE" NUM_ROW="21" REQUIRED="true" GROUP="CLIENT" 
+			SHOW_IF="AUTHENTICATION_METHOD == 'APPLICATION_CLIENT_ID'">
+			<DEFAULT>"/tmp/client_secret.json"</DEFAULT>
 		</PARAMETER>
 
 		<PARAMETER NAME="SCHEMA_ACCOUNTS" FIELD="SCHEMA_TYPE"
@@ -279,35 +314,23 @@
 			REQUIRED="true" NUM_ROW="110" CONTEXT="UNSAMPLED_REPORTS">
 			<TABLE READONLY="true">
 				<COLUMN NAME="REPORT_ID" TYPE="id_String" READONLY="true"
-					CUSTOM="true" LENGTH="16" KEY="false" NULLABLE="false" COMMENT="ID of the unsampled report" />
+					CUSTOM="true" LENGTH="32" KEY="true" NULLABLE="false" COMMENT="ID of the unsampled report" />
 				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID to which this unsampled report belongs."
-					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
 				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID to which this unsamplaed report belongs."
 					CUSTOM="true" LENGTH="22" NULLABLE="false" />
 				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web property ID to which this unsampled report belongs."
 					CUSTOM="true" LENGTH="32" NULLABLE="false" />
 				<COLUMN NAME="REPORT_CREATED" TYPE="id_Date" READONLY="true"
-					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="false"/>
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="true"/>
 				<COLUMN NAME="REPORT_UPDATED" TYPE="id_Date" READONLY="true"
-					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="false"/>
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="22" NULLABLE="true"/>
 				<COLUMN NAME="REPORT_TITLE" TYPE="id_String" READONLY="true"
-					CUSTOM="true" LENGTH="64" KEY="true" NULLABLE="false" COMMENT="Title of the unsampled report" />
-				<COLUMN NAME="REPORT_START_DATE" TYPE="id_Date" READONLY="true"
-					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd&quot;" LENGTH="22" NULLABLE="false" COMMENT="Start date of the report date range" />
-				<COLUMN NAME="REPORT_END_DATE" TYPE="id_Date" READONLY="true"
-					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd&quot;" LENGTH="22" NULLABLE="false" COMMENT="End date of the report date range" />
-				<COLUMN NAME="REPORT_METRICS" TYPE="id_String" READONLY="true" COMMENT="Metrics comma separated"
-					CUSTOM="true" LENGTH="255" NULLABLE="false" />
-				<COLUMN NAME="REPORT_DIMENSIONS" TYPE="id_String" READONLY="true" COMMENT="Dimenstions comma separated"
-					CUSTOM="true" LENGTH="255" NULLABLE="true" />
-				<COLUMN NAME="REPORT_FILTERS" TYPE="id_String" READONLY="true" COMMENT="Filters used in this report"
-					CUSTOM="true" LENGTH="255" NULLABLE="true" />
-				<COLUMN NAME="REPORT_SEGMENT" TYPE="id_String" READONLY="true" COMMENT="Segment used in this report"
-					CUSTOM="true" LENGTH="255" NULLABLE="true" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" COMMENT="Title of the unsampled report" />
 				<COLUMN NAME="REPORT_STATUS" TYPE="id_String" READONLY="true" COMMENT="Status of this unsampled report. Possible values are PENDING, COMPLETED, or FAILED."
 					CUSTOM="true" LENGTH="16" NULLABLE="true" />
 				<COLUMN NAME="REPORT_DOWNLOAD_TYPE" TYPE="id_String" READONLY="true"
-					CUSTOM="true" LENGTH="64" KEY="false" NULLABLE="false" COMMENT="How to download the result file (Cloud Storage or Google Drive)" />
+					CUSTOM="true" LENGTH="64" KEY="false" NULLABLE="true" COMMENT="How to download the result file (Cloud Storage or Google Drive)" />
 				<COLUMN NAME="REPORT_CLOUDSTORAGE_BUCKET_ID" TYPE="id_String" READONLY="true"
 					CUSTOM="true" LENGTH="128" NULLABLE="true" COMMENT="Cloud Storage bucket-ID"/>
 				<COLUMN NAME="REPORT_CLOUDSTORAGE_OBJECT_ID" TYPE="id_String" READONLY="true"
@@ -336,7 +359,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-4.0-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-4.1-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
