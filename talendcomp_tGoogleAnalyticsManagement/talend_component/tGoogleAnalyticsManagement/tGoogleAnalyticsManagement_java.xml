@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="4.1" 
+	    VERSION="5.0" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20141223A"
+		RELEASE_DATE="20150123A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -46,6 +46,12 @@
 		<CONNECTOR NAME="REPORT_COLUMNS" CTYPE="FLOW" MAX_INPUT="0"
 			MAX_OUTPUT="1" LINE_STYLE="1"  />
 		<CONNECTOR NAME="UNSAMPLED_REPORTS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1"  />
+		<CONNECTOR NAME="ACCOUNT_USER_PERMISSIONS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1"  />
+		<CONNECTOR NAME="WEBPROPERTY_USER_PERMISSIONS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1"  />
+		<CONNECTOR NAME="PROFILE_USER_PERMISSIONS" CTYPE="FLOW" MAX_INPUT="0"
 			MAX_OUTPUT="1" LINE_STYLE="1"  />
 	</CONNECTORS>
 	<PARAMETERS>
@@ -341,6 +347,48 @@
 					CUSTOM="true" LENGTH="512" NULLABLE="true" COMMENT="The Link to manage this unsampled report"/>
 			</TABLE>
 		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_ACCOUNT_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="120" CONTEXT="ACCOUNT_USER_PERMISSIONS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this account"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this account"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_WEBPROPERTY_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="121" CONTEXT="WEBPROPERTY_USER_PERMISSIONS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web Property ID"
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this Web Property"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this Web Property"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_PROFILE_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="122" CONTEXT="PROFILE_USER_PERMISSIONS">
+			<TABLE READONLY="true">
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID"
+					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
+				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this profile"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this profile"
+					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+			</TABLE>
+		</PARAMETER>
+		<PARAMETER FIELD="CHECK" NAME="IGNORE_PERMISSION_ERRORS" NUM_ROW="130">
+			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
 	</PARAMETERS>
 	<ADVANCED_PARAMETERS>
 		<PARAMETER FIELD="TEXT" NAME="TIMEOUT_IN_SEC" NUM_ROW="10">
@@ -359,7 +407,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-4.1-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-5.0-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
@@ -373,5 +421,8 @@
 		<RETURN AVAILABILITY="AFTER" NAME="GOAL_EVENT_CONDITIONS_NB_LINE" TYPE="id_Integer" />
 		<RETURN AVAILABILITY="AFTER" NAME="REPORT_COLUMNS_NB_LINE" TYPE="id_Integer" />
 		<RETURN AVAILABILITY="AFTER" NAME="UNSAMPLED_REPORTS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="ACCOUNT_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="WEBPROPERTY_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="PROFILE_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
 	</RETURNS>
 </COMPONENT>

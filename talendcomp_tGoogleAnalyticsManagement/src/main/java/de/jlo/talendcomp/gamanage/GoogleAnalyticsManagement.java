@@ -16,6 +16,7 @@ import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
@@ -29,13 +30,15 @@ import com.google.api.services.analytics.Analytics.Management;
 import com.google.api.services.analytics.AnalyticsScopes;
 import com.google.api.services.analytics.model.Account;
 import com.google.api.services.analytics.model.Accounts;
+import com.google.api.services.analytics.model.Column;
+import com.google.api.services.analytics.model.Columns;
+import com.google.api.services.analytics.model.EntityUserLink;
+import com.google.api.services.analytics.model.EntityUserLinks;
 import com.google.api.services.analytics.model.Goal;
 import com.google.api.services.analytics.model.Goal.EventDetails;
 import com.google.api.services.analytics.model.Goal.EventDetails.EventConditions;
 import com.google.api.services.analytics.model.Goal.UrlDestinationDetails;
 import com.google.api.services.analytics.model.Goal.UrlDestinationDetails.Steps;
-import com.google.api.services.analytics.model.Column;
-import com.google.api.services.analytics.model.Columns;
 import com.google.api.services.analytics.model.Goals;
 import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Profiles;
@@ -65,6 +68,9 @@ public class GoogleAnalyticsManagement {
 	private List<Profile> listProfiles;
 	private List<Segment> listSegments;
 	private List<Goal> listGoals;
+	private List<ProfileUserPermission> listUserLinksForProfiles;
+	private List<WebPropertyUserPermission> listUserLinksForWebProperties;
+	private List<AccountUserPermission> listUserLinksForAccounts;
 	private List<GoalUrlDestinationStepWrapper> listGoalUrlDestinationSteps;
 	private List<GoalEventConditionWrapper> listGoalEventConditions;
 	private List<Column> listColumns;
@@ -73,6 +79,7 @@ public class GoogleAnalyticsManagement {
 	private long innerLoopWaitInterval = 500;
 	private int maxRows = 0;
 	private int currentIndex = 0;
+	private boolean ignoreUserPermissionErrors = false;
 	
 	public static void putIntoCache(String key, GoogleAnalyticsManagement gam) {
 		clientCache.put(key, gam);
@@ -114,7 +121,7 @@ public class GoogleAnalyticsManagement {
 				.setTransport(HTTP_TRANSPORT)
 				.setJsonFactory(JSON_FACTORY)
 				.setServiceAccountId(accountEmail)
-				.setServiceAccountScopes(Arrays.asList(AnalyticsScopes.ANALYTICS_READONLY))
+				.setServiceAccountScopes(Arrays.asList(AnalyticsScopes.ANALYTICS_READONLY, AnalyticsScopes.ANALYTICS_MANAGE_USERS))
 				.setServiceAccountPrivateKeyFromP12File(keyFile)
 				.setClock(new Clock() {
 					@Override
@@ -217,6 +224,9 @@ public class GoogleAnalyticsManagement {
 		listGoalEventConditions = null;
 		listGoalUrlDestinationSteps = null;
 		listUnsampledReports = null;
+		listUserLinksForProfiles = null;
+		listUserLinksForWebProperties = null;
+		listUserLinksForAccounts = null;
 		maxRows = 0;
 		currentIndex = 0;
 	}
@@ -400,6 +410,117 @@ public class GoogleAnalyticsManagement {
 		setMaxRows(listSegments.size());
 	}
 	
+	public void collectProfileUserPermissions() throws Exception {
+		if (listProfiles == null) {
+			collectProfiles();
+		}
+		System.out.println("Collect users permissions for views...");
+		listUserLinksForProfiles = new ArrayList<ProfileUserPermission>();
+		for (Profile p : listProfiles) {
+			 Thread.sleep(innerLoopWaitInterval);
+			 try {
+				 EntityUserLinks eul = analyticsClient.management()
+					.profileUserLinks()
+					.list(
+							p.getAccountId(), 
+							p.getWebPropertyId(), 
+							p.getId())
+					.execute();
+				 for (EntityUserLink e : eul.getItems()) {
+					 ProfileUserPermission u = new ProfileUserPermission();
+					 u.setProfileId(Long.valueOf(p.getId()));
+					 u.setEmail(e.getUserRef().getEmail());
+					 EntityUserLink.Permissions per = e.getPermissions();
+					 if (per != null) {
+						 u.setEffectivePermissions(per.getEffective());
+						 u.setLocalPermissions(per.getLocal());
+					 }
+					 listUserLinksForProfiles.add(u);
+				 }
+			 } catch (GoogleJsonResponseException e) {
+				 if (ignoreUserPermissionErrors) {
+					 System.err.println("Collect users permissions for profile (view): " + p.getId() + " failed: " + e.getMessage());
+				 } else {
+					 throw e;
+				 }
+			 }
+		}
+		setMaxRows(listUserLinksForProfiles.size());
+	}
+
+	public void collectWebPropertyUserPermissions() throws Exception {
+		if (listWebProperties == null) {
+			collectWebProperties();
+		}
+		System.out.println("Collect users permissions for web properties...");
+		listUserLinksForWebProperties = new ArrayList<WebPropertyUserPermission>();
+		for (Webproperty p : listWebProperties) {
+			 Thread.sleep(innerLoopWaitInterval);
+			 try {
+				 EntityUserLinks eul = analyticsClient.management()
+							.webpropertyUserLinks()
+							.list(
+									p.getAccountId(), 
+									p.getId())
+							.execute();
+				 for (EntityUserLink e : eul.getItems()) {
+					 WebPropertyUserPermission u = new WebPropertyUserPermission();
+					 u.setWebPropertyId(p.getId());
+					 u.setEmail(e.getUserRef().getEmail());
+					 EntityUserLink.Permissions per = e.getPermissions();
+					 if (per != null) {
+						 u.setEffectivePermissions(per.getEffective());
+						 u.setLocalPermissions(per.getLocal());
+					 }
+					 listUserLinksForWebProperties.add(u);
+				 }
+			 } catch (GoogleJsonResponseException e) {
+				 if (ignoreUserPermissionErrors) {
+					 System.err.println("Collect users permissions for web property: " + p.getId() + " failed: " + e.getMessage());
+				 } else {
+					 throw e;
+				 }
+			 }
+		}
+		setMaxRows(listUserLinksForWebProperties.size());
+	}
+
+	public void collectAccountUserPermissions() throws Exception {
+		if (listAccounts == null) {
+			collectAccounts();
+		}
+		System.out.println("Collect users permissions for accounts...");
+		listUserLinksForAccounts = new ArrayList<AccountUserPermission>();
+		for (Account p : listAccounts) {
+			 Thread.sleep(innerLoopWaitInterval);
+			 try {
+				 EntityUserLinks eul = analyticsClient.management()
+							.accountUserLinks()
+							.list(
+									p.getId())
+							.execute();
+				 for (EntityUserLink e : eul.getItems()) {
+					 AccountUserPermission u = new AccountUserPermission();
+					 u.setAccountId(Long.valueOf(p.getId()));
+					 u.setEmail(e.getUserRef().getEmail());
+					 EntityUserLink.Permissions per = e.getPermissions();
+					 if (per != null) {
+						 u.setEffectivePermissions(per.getEffective());
+						 u.setLocalPermissions(per.getLocal());
+					 }
+					 listUserLinksForAccounts.add(u);
+				 }
+			 } catch (GoogleJsonResponseException e) {
+				 if (ignoreUserPermissionErrors) {
+					 System.err.println("Collect users permissions for account: " + p.getId() + " failed: " + e.getMessage());
+				 } else {
+					 throw e;
+				 }
+			 }
+		}
+		setMaxRows(listUserLinksForAccounts.size());
+	}
+
 	public void setTimeOffsetMillisToPast(long timeMillisOffsetToPast) {
 		this.timeMillisOffsetToPast = timeMillisOffsetToPast;
 	}
@@ -549,6 +670,63 @@ public class GoogleAnalyticsManagement {
 		}
 	}
 
+	public boolean hasCurrentProfileUserPermission() {
+		if (listUserLinksForProfiles != null) {
+			return currentIndex <= listUserLinksForProfiles.size();
+		} else {
+			return false;
+		}
+	}
+
+	public ProfileUserPermission getCurrentProfileUserPermission() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("call next before!");
+		}
+		if (currentIndex <= listUserLinksForProfiles.size()) {
+			return listUserLinksForProfiles.get(currentIndex - 1);
+		} else {
+			return null;
+		}
+	}
+
+	public boolean hasCurrentWebPropertyUserPermission() {
+		if (listUserLinksForWebProperties != null) {
+			return currentIndex <= listUserLinksForWebProperties.size();
+		} else {
+			return false;
+		}
+	}
+
+	public WebPropertyUserPermission getCurrentWebPropertyUserPermission() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("call next before!");
+		}
+		if (currentIndex <= listUserLinksForWebProperties.size()) {
+			return listUserLinksForWebProperties.get(currentIndex - 1);
+		} else {
+			return null;
+		}
+	}
+
+	public boolean hasCurrentAccountUserPermission() {
+		if (listUserLinksForAccounts != null) {
+			return currentIndex <= listUserLinksForAccounts.size();
+		} else {
+			return false;
+		}
+	}
+
+	public AccountUserPermission getCurrentAccountUserPermission() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("call next before!");
+		}
+		if (currentIndex <= listUserLinksForAccounts.size()) {
+			return listUserLinksForAccounts.get(currentIndex - 1);
+		} else {
+			return null;
+		}
+	}
+
 	public long getMainWaitInterval() {
 		return mainWaitInterval;
 	}
@@ -645,6 +823,14 @@ public class GoogleAnalyticsManagement {
 
 	public void setClientSecretFile(String clientSecretFile) {
 		this.clientSecretFile = clientSecretFile;
+	}
+
+	public boolean isIgnoreUserPermissionErrors() {
+		return ignoreUserPermissionErrors;
+	}
+
+	public void setIgnoreUserPermissionErrors(boolean ignoreUserPermissionErrors) {
+		this.ignoreUserPermissionErrors = ignoreUserPermissionErrors;
 	}
 
 }
