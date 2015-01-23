@@ -32,6 +32,9 @@
     List<? extends IConnection> connsGoalEventConditions = node.getOutgoingConnections("GOAL_EVENT_CONDITIONS");
     List<? extends IConnection> connsColumns = node.getOutgoingConnections("REPORT_COLUMNS");
     List<? extends IConnection> connsUnsampledReports = node.getOutgoingConnections("UNSAMPLED_REPORTS");
+    List<? extends IConnection> connsAccountUserPermissions = node.getOutgoingConnections("ACCOUNT_USER_PERMISSIONS");
+    List<? extends IConnection> connsWebpropertyUserPermissions = node.getOutgoingConnections("WEBPROPERTY_USER_PERMISSIONS");
+    List<? extends IConnection> connsProfileUserPermissions = node.getOutgoingConnections("PROFILE_USER_PERMISSIONS");
     String accountRowName = null;
     String webpropertyRowName = null;
     String profileRowName = null;
@@ -41,6 +44,10 @@
     String goalEventConditionsRowName = null;
     String columnsRowName = null;
     String unsampledReportsRowName = null;
+    String accountUserPermissionsRowName = null;
+    String webpropertyUserPermissionsRowName = null;
+    String profileUserPermissionsRowName = null;
+	 boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
@@ -69,6 +76,7 @@
 <% if (timeOffset != null && timeOffset.trim().isEmpty() == false) {%>
 	    <%=cid%>.setTimeOffsetMillisToPast(<%=timeOffset%>);
 <% }%>
+       <%=cid%>.setIgnoreUserPermissionErrors(<%=ignorePermissionErrors%>);
 	    try {
 	        // initialize client with private key
 	        System.out.println("Initialise client...");
@@ -137,6 +145,24 @@
     		unsampledReportsRowName = connTemp.getName();
     	}
     }
+    if (connsAccountUserPermissions != null && connsAccountUserPermissions.size() > 0) {
+    	IConnection connTemp = connsAccountUserPermissions.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		accountUserPermissionsRowName = connTemp.getName();
+    	}
+    }
+    if (connsWebpropertyUserPermissions != null && connsWebpropertyUserPermissions.size() > 0) {
+    	IConnection connTemp = connsWebpropertyUserPermissions.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		webpropertyUserPermissionsRowName = connTemp.getName();
+    	}
+    }
+    if (connsProfileUserPermissions != null && connsProfileUserPermissions.size() > 0) {
+    	IConnection connTemp = connsProfileUserPermissions.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		profileUserPermissionsRowName = connTemp.getName();
+    	}
+    }
 %>
     <%=cid%>.reset();
 	try {
@@ -166,6 +192,18 @@
 	    // collect unsampled reports
 		<%=cid%>.collectUnsampledReports();
 <%  }
+    if (accountUserPermissionsRowName != null) { %>
+	    // collect account user permissions
+		<%=cid%>.collectAccountUserPermissions();
+<%  }
+    if (webpropertyUserPermissionsRowName != null) { %>
+	    // collect web property user permissions
+		<%=cid%>.collectWebPropertyUserPermissions();
+<%  }
+    if (profileUserPermissionsRowName != null) { %>
+	    // collect view user permissions
+		<%=cid%>.collectProfileUserPermissions();
+<%  }
 %>
 	    System.out.println("Collecting data finished.");
     } catch (Exception e) {
@@ -181,7 +219,10 @@
     int countGoalEventConditions_<%=cid%> = 0;
     int countColumns_<%=cid%> = 0;
     int countUnsampledReports_<%=cid%> = 0;
-	while (<%=cid%>.next()) {
+    int countAccountUserPermissions_<%=cid%> = 0;
+    int countWebpropertyUserPermissions_<%=cid%> = 0;
+    int countProfileUserPermissions_<%=cid%> = 0;
+    while (<%=cid%>.next()) {
 		// loop through all elements
 <%  if (accountRowName != null) { %>
 		if (<%=cid%>.hasCurrentAccount()) {
@@ -334,7 +375,7 @@
 			<%=columnsRowName%> = null;
 		}
 <%  } %>
-<%  if (unsampledReportsRowName != null) { %>	
+<%  if (unsampledReportsRowName != null) { %>
 		if (<%=cid%>.hasCurrentUnsampledReport()) {
 		   <%=unsampledReportsRowName%> = new <%=unsampledReportsRowName%>Struct();
 		   com.google.api.services.analytics.model.UnsampledReport report = <%=cid%>.getCurrentUnsampledReport();
@@ -354,5 +395,44 @@
 			countUnsampledReports_<%=cid%>++;
 		} else {
 			<%=unsampledReportsRowName%> = null;
+		}
+<%  } %>
+<%  if (accountUserPermissionsRowName != null) { %>
+		if (<%=cid%>.hasCurrentAccountUserPermission()) {
+		   <%=accountUserPermissionsRowName%> = new <%=accountUserPermissionsRowName%>Struct();
+		   de.jlo.talendcomp.gamanage.AccountUserPermission p = <%=cid%>.getCurrentAccountUserPermission();
+		   <%=accountUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
+		   <%=accountUserPermissionsRowName%>.EMAIL = p.getEmail();
+		   <%=accountUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
+		   <%=accountUserPermissionsRowName%>.PERMISSIONS_EFFECTIVE = p.getEffectivePermissions();
+			countAccountUserPermissions_<%=cid%>++;
+		} else {
+			<%=accountUserPermissionsRowName%> = null;
+		}
+<%  } %>
+<%  if (webpropertyUserPermissionsRowName != null) { %>
+		if (<%=cid%>.hasCurrentWebPropertyUserPermission()) {
+		   <%=webpropertyUserPermissionsRowName%> = new <%=webpropertyUserPermissionsRowName%>Struct();
+		   de.jlo.talendcomp.gamanage.WebPropertyUserPermission p = <%=cid%>.getCurrentWebPropertyUserPermission();
+		   <%=webpropertyUserPermissionsRowName%>.WEBPROPERTY_ID = p.getWebPropertyId();
+		   <%=webpropertyUserPermissionsRowName%>.EMAIL = p.getEmail();
+		   <%=webpropertyUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
+		   <%=webpropertyUserPermissionsRowName%>.PERMISSIONS_EFFECTIVE = p.getEffectivePermissions();
+			countWebpropertyUserPermissions_<%=cid%>++;
+		} else {
+			<%=webpropertyUserPermissionsRowName%> = null;
+		}
+<%  } %>
+<%  if (profileUserPermissionsRowName != null) { %>
+		if (<%=cid%>.hasCurrentProfileUserPermission()) {
+		   <%=profileUserPermissionsRowName%> = new <%=profileUserPermissionsRowName%>Struct();
+		   de.jlo.talendcomp.gamanage.ProfileUserPermission p = <%=cid%>.getCurrentProfileUserPermission();
+		   <%=profileUserPermissionsRowName%>.PROFILE_ID = p.getProfileId();
+		   <%=profileUserPermissionsRowName%>.EMAIL = p.getEmail();
+		   <%=profileUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
+		   <%=profileUserPermissionsRowName%>.PERMISSIONS_EFFECTIVE = p.getEffectivePermissions();
+			countProfileUserPermissions_<%=cid%>++;
+		} else {
+			<%=profileUserPermissionsRowName%> = null;
 		}
 <%  } %>

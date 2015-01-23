@@ -18,3 +18,6 @@
 	globalMap.put("<%=cid%>_GOAL_EVENT_CONDITIONS_NB_LINE", countGoalEventConditions_<%=cid%>);
 	globalMap.put("<%=cid%>_REPORT_COLUMNS_NB_LINE", countColumns_<%=cid%>);
 	globalMap.put("<%=cid%>_UNSAMPLED_REPORTS_NB_LINE", countUnsampledReports_<%=cid%>);
+	globalMap.put("<%=cid%>_ACCOUNT_USER_PERMISSIONS_NB_LINE", countAccountUserPermissions_<%=cid%>);
+	globalMap.put("<%=cid%>_WEBPROPERTY_USER_PERMISSIONS_NB_LINE", countWebpropertyUserPermissions_<%=cid%>);
+	globalMap.put("<%=cid%>_PROFILE_USER_PERMISSIONS_NB_LINE", countProfileUserPermissions_<%=cid%>);
