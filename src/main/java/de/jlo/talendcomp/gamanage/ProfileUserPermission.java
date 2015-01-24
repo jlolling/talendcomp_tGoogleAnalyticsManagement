@@ -1,6 +1,6 @@
 package de.jlo.talendcomp.gamanage;
 
-public class ProfileUserPermission extends UserPermission {
+public class ProfileUserPermission extends WebPropertyUserPermission {
 
 	private long profileId = 0;
 

@@ -422,12 +422,14 @@ public class GoogleAnalyticsManagement {
 				 EntityUserLinks eul = analyticsClient.management()
 					.profileUserLinks()
 					.list(
-							p.getAccountId(), 
-							p.getWebPropertyId(), 
+							p.getAccountId(),
+							p.getWebPropertyId(),
 							p.getId())
 					.execute();
 				 for (EntityUserLink e : eul.getItems()) {
 					 ProfileUserPermission u = new ProfileUserPermission();
+					 u.setAccountId(Long.valueOf(p.getAccountId()));
+					 u.setWebPropertyId(p.getWebPropertyId());
 					 u.setProfileId(Long.valueOf(p.getId()));
 					 u.setEmail(e.getUserRef().getEmail());
 					 EntityUserLink.Permissions per = e.getPermissions();
@@ -465,6 +467,7 @@ public class GoogleAnalyticsManagement {
 							.execute();
 				 for (EntityUserLink e : eul.getItems()) {
 					 WebPropertyUserPermission u = new WebPropertyUserPermission();
+					 u.setAccountId(Long.valueOf(p.getAccountId()));
 					 u.setWebPropertyId(p.getId());
 					 u.setEmail(e.getUserRef().getEmail());
 					 EntityUserLink.Permissions per = e.getPermissions();

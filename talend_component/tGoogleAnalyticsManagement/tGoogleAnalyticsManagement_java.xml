@@ -4,7 +4,7 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="5.0" 
+	    VERSION="5.1" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
@@ -350,12 +350,12 @@
 		<PARAMETER NAME="SCHEMA_ACCOUNT_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
 			REQUIRED="true" NUM_ROW="120" CONTEXT="ACCOUNT_USER_PERMISSIONS">
 			<TABLE READONLY="true">
-				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID"
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" KEY="true" READONLY="true" COMMENT="Account ID"
 					CUSTOM="true" LENGTH="22" NULLABLE="false" />
-				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
 					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this account"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this account"
 					CUSTOM="true" LENGTH="64" NULLABLE="false" />
 			</TABLE>
@@ -363,12 +363,14 @@
 		<PARAMETER NAME="SCHEMA_WEBPROPERTY_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
 			REQUIRED="true" NUM_ROW="121" CONTEXT="WEBPROPERTY_USER_PERMISSIONS">
 			<TABLE READONLY="true">
-				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web Property ID"
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" KEY="true" READONLY="true" COMMENT="Web Property ID"
 					CUSTOM="true" LENGTH="32" NULLABLE="false" />
-				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
 					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this Web Property"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this Web Property"
 					CUSTOM="true" LENGTH="64" NULLABLE="false" />
 			</TABLE>
@@ -376,12 +378,16 @@
 		<PARAMETER NAME="SCHEMA_PROFILE_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
 			REQUIRED="true" NUM_ROW="122" CONTEXT="PROFILE_USER_PERMISSIONS">
 			<TABLE READONLY="true">
-				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="View (Profile) ID"
-					CUSTOM="true" LENGTH="22" KEY="true" NULLABLE="false" />
-				<COLUMN NAME="EMAIL" TYPE="id_String" COMMENT="Email of the User having the permissions"
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web Property ID"
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" KEY="true" READONLY="true" COMMENT="View (Profile) ID"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
 					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this profile"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this profile"
 					CUSTOM="true" LENGTH="64" NULLABLE="false" />
 			</TABLE>
@@ -407,7 +413,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-5.0-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-5.1-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
