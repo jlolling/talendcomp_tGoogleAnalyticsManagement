@@ -1,6 +1,6 @@
 package de.jlo.talendcomp.gamanage;
 
-public class WebPropertyUserPermission extends UserPermission {
+public class WebPropertyUserPermission extends AccountUserPermission {
 
 	private String webPropertyId;
 

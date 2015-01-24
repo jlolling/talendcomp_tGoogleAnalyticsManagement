@@ -414,6 +414,7 @@
 		if (<%=cid%>.hasCurrentWebPropertyUserPermission()) {
 		   <%=webpropertyUserPermissionsRowName%> = new <%=webpropertyUserPermissionsRowName%>Struct();
 		   de.jlo.talendcomp.gamanage.WebPropertyUserPermission p = <%=cid%>.getCurrentWebPropertyUserPermission();
+		   <%=webpropertyUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
 		   <%=webpropertyUserPermissionsRowName%>.WEBPROPERTY_ID = p.getWebPropertyId();
 		   <%=webpropertyUserPermissionsRowName%>.EMAIL = p.getEmail();
 		   <%=webpropertyUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
@@ -427,6 +428,8 @@
 		if (<%=cid%>.hasCurrentProfileUserPermission()) {
 		   <%=profileUserPermissionsRowName%> = new <%=profileUserPermissionsRowName%>Struct();
 		   de.jlo.talendcomp.gamanage.ProfileUserPermission p = <%=cid%>.getCurrentProfileUserPermission();
+		   <%=profileUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
+		   <%=profileUserPermissionsRowName%>.WEBPROPERTY_ID = p.getWebPropertyId();
 		   <%=profileUserPermissionsRowName%>.PROFILE_ID = p.getProfileId();
 		   <%=profileUserPermissionsRowName%>.EMAIL = p.getEmail();
 		   <%=profileUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
