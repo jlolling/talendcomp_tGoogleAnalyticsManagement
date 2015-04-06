@@ -39,6 +39,8 @@ import com.google.api.services.analytics.model.Goal.EventDetails;
 import com.google.api.services.analytics.model.Goal.EventDetails.EventConditions;
 import com.google.api.services.analytics.model.Goal.UrlDestinationDetails;
 import com.google.api.services.analytics.model.Goal.UrlDestinationDetails.Steps;
+import com.google.api.services.analytics.model.CustomDataSource;
+import com.google.api.services.analytics.model.CustomDataSources;
 import com.google.api.services.analytics.model.Goals;
 import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Profiles;
@@ -75,6 +77,7 @@ public class GoogleAnalyticsManagement {
 	private List<GoalEventConditionWrapper> listGoalEventConditions;
 	private List<Column> listColumns;
 	private List<UnsampledReport> listUnsampledReports;
+	private List<CustomDataSource> listCustomDataSources;
 	private long mainWaitInterval = 2000;
 	private long innerLoopWaitInterval = 500;
 	private int maxRows = 0;
@@ -227,20 +230,49 @@ public class GoogleAnalyticsManagement {
 		listUserLinksForProfiles = null;
 		listUserLinksForWebProperties = null;
 		listUserLinksForAccounts = null;
+		listCustomDataSources = null;
 		maxRows = 0;
 		currentIndex = 0;
 	}
 
-	public void collectAll() throws Exception {
-		collectAccounts();
-		Thread.sleep(mainWaitInterval);
-		collectWebProperties();
-		Thread.sleep(mainWaitInterval);
-		collectProfiles();
-		Thread.sleep(mainWaitInterval);
-		collectSegments();
-		Thread.sleep(mainWaitInterval);
-		collectGoals();
+	public boolean isUseServiceAccount() {
+		return useServiceAccount;
+	}
+
+	public void setUseServiceAccount(boolean useServiceAccount) {
+		this.useServiceAccount = useServiceAccount;
+	}
+
+	public String getClientSecretFile() {
+		return clientSecretFile;
+	}
+
+	public void setClientSecretFile(String clientSecretFile) {
+		this.clientSecretFile = clientSecretFile;
+	}
+
+	public boolean isIgnoreUserPermissionErrors() {
+		return ignoreUserPermissionErrors;
+	}
+
+	public void setIgnoreUserPermissionErrors(boolean ignoreUserPermissionErrors) {
+		this.ignoreUserPermissionErrors = ignoreUserPermissionErrors;
+	}
+
+	public long getMainWaitInterval() {
+		return mainWaitInterval;
+	}
+
+	public void setMainWaitInterval(long mainWaitInterval) {
+		this.mainWaitInterval = mainWaitInterval;
+	}
+
+	public long getInnerLoopWaitInterval() {
+		return innerLoopWaitInterval;
+	}
+
+	public void setInnerLoopWaitInterval(long innerLoopWaitInterval) {
+		this.innerLoopWaitInterval = innerLoopWaitInterval;
 	}
 	
 	private void setMaxRows(int rows) {
@@ -730,22 +762,6 @@ public class GoogleAnalyticsManagement {
 		}
 	}
 
-	public long getMainWaitInterval() {
-		return mainWaitInterval;
-	}
-
-	public void setMainWaitInterval(long mainWaitInterval) {
-		this.mainWaitInterval = mainWaitInterval;
-	}
-
-	public long getInnerLoopWaitInterval() {
-		return innerLoopWaitInterval;
-	}
-
-	public void setInnerLoopWaitInterval(long innerLoopWaitInterval) {
-		this.innerLoopWaitInterval = innerLoopWaitInterval;
-	}
-	
 	public void collectColumns() throws Exception {
 		System.out.println("Collect metric and dimension metadata...");
 		Columns columns = analyticsClient.metadata().columns().list("ga").execute();
@@ -812,28 +828,68 @@ public class GoogleAnalyticsManagement {
 		}
 	}
 
-	public boolean isUseServiceAccount() {
-		return useServiceAccount;
+	public void collectCustomDataSources() throws Exception {
+		if (listWebProperties == null) {
+			collectWebProperties();
+		}
+		System.out.println("Collect custom data sources...");
+		listCustomDataSources = new ArrayList<CustomDataSource>();
+		for (Webproperty w : listWebProperties) {
+			CustomDataSources dataSources = analyticsClient
+					.management()
+					.customDataSources()
+					.list(w.getAccountId(), w.getId())
+				    .execute();
+			Thread.sleep(900);
+			if (dataSources != null && dataSources.getItems() != null) {
+				for (CustomDataSource ds : dataSources.getItems()) {
+					listCustomDataSources.add(ds);
+				}
+			}
+		}
+		setMaxRows(listCustomDataSources.size());
 	}
 
-	public void setUseServiceAccount(boolean useServiceAccount) {
-		this.useServiceAccount = useServiceAccount;
+	public boolean hasCurrentCustomDataSource() {
+		if (listCustomDataSources != null) {
+			return currentIndex <= listCustomDataSources.size();
+		} else {
+			return false;
+		}
+	}
+	
+	public CustomDataSource getCurrentCustomDataSource() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("Call next before!");
+		}
+		if (currentIndex <= listCustomDataSources.size()) {
+			return listCustomDataSources.get(currentIndex - 1);
+		} else {
+			return null;
+		}
 	}
 
-	public String getClientSecretFile() {
-		return clientSecretFile;
-	}
-
-	public void setClientSecretFile(String clientSecretFile) {
-		this.clientSecretFile = clientSecretFile;
-	}
-
-	public boolean isIgnoreUserPermissionErrors() {
-		return ignoreUserPermissionErrors;
-	}
-
-	public void setIgnoreUserPermissionErrors(boolean ignoreUserPermissionErrors) {
-		this.ignoreUserPermissionErrors = ignoreUserPermissionErrors;
+	/**
+	 * builds a separated String from the list entries
+	 * @param list
+	 * @param separator
+	 * @return the chained strings
+	 */
+	public static String buildChain(List<String> list, String separator) {
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		boolean firstLoop = true;
+		StringBuilder sb = new StringBuilder();
+		for (String s : list) {
+			if (firstLoop) {
+				firstLoop = false;
+			} else {
+				sb.append(separator);
+			}
+			sb.append(s);
+		}
+		return sb.toString();
 	}
 
 }

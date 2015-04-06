@@ -35,6 +35,7 @@
     List<? extends IConnection> connsAccountUserPermissions = node.getOutgoingConnections("ACCOUNT_USER_PERMISSIONS");
     List<? extends IConnection> connsWebpropertyUserPermissions = node.getOutgoingConnections("WEBPROPERTY_USER_PERMISSIONS");
     List<? extends IConnection> connsProfileUserPermissions = node.getOutgoingConnections("PROFILE_USER_PERMISSIONS");
+    List<? extends IConnection> connsCustomDatasources = node.getOutgoingConnections("CUSTOM_DATA_SOURCES");
     String accountRowName = null;
     String webpropertyRowName = null;
     String profileRowName = null;
@@ -47,7 +48,8 @@
     String accountUserPermissionsRowName = null;
     String webpropertyUserPermissionsRowName = null;
     String profileUserPermissionsRowName = null;
-	 boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
+    String customDatasourceRowName = null;
+	boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
@@ -163,6 +165,12 @@
     		profileUserPermissionsRowName = connTemp.getName();
     	}
     }
+    if (connsCustomDatasources != null && connsCustomDatasources.size() > 0) {
+    	IConnection connTemp = connsCustomDatasources.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		customDatasourceRowName = connTemp.getName();
+    	}
+    }
 %>
     <%=cid%>.reset();
 	try {
@@ -204,6 +212,10 @@
 	    // collect view user permissions
 		<%=cid%>.collectProfileUserPermissions();
 <%  }
+    if (customDatasourceRowName != null) { %>
+	    // collect custom data sources
+		<%=cid%>.collectCustomDataSources();
+<%  }
 %>
 	    System.out.println("Collecting data finished.");
     } catch (Exception e) {
@@ -222,6 +234,7 @@
     int countAccountUserPermissions_<%=cid%> = 0;
     int countWebpropertyUserPermissions_<%=cid%> = 0;
     int countProfileUserPermissions_<%=cid%> = 0;
+    int countCustomDataSources_<%=cid%> = 0;
     while (<%=cid%>.next()) {
 		// loop through all elements
 <%  if (accountRowName != null) { %>
@@ -437,5 +450,23 @@
 			countProfileUserPermissions_<%=cid%>++;
 		} else {
 			<%=profileUserPermissionsRowName%> = null;
+		}
+<%  } %>
+<%  if (customDatasourceRowName != null) { %>
+		if (<%=cid%>.hasCurrentCustomDataSource()) {
+		   <%=customDatasourceRowName%> = new <%=customDatasourceRowName%>Struct();
+		   com.google.api.services.analytics.model.CustomDataSource d = <%=cid%>.getCurrentCustomDataSource();
+		   <%=customDatasourceRowName%>.CDS_ID = d.getId();
+		   <%=customDatasourceRowName%>.ACCOUNT_ID = Long.parseLong(d.getAccountId());
+		   <%=customDatasourceRowName%>.WEBPROPERTY_ID = d.getWebPropertyId();
+		   <%=customDatasourceRowName%>.CDS_NAME = d.getName();
+		   <%=customDatasourceRowName%>.CDS_TYPE = d.getType();
+		   <%=customDatasourceRowName%>.CDS_IMPORT_BEHAVIOR = d.getImportBehavior();
+		   <%=customDatasourceRowName%>.CDS_LINKED_PROFILES = de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.buildChain(d.getProfilesLinked(),",");
+		   <%=customDatasourceRowName%>.CDS_CREATED = d.getCreated() != null ? new java.util.Date(d.getCreated().getValue()) : null;
+		   <%=customDatasourceRowName%>.CDS_UPDATED = d.getUpdated() != null ? new java.util.Date(d.getUpdated().getValue()) : null;
+			countCustomDataSources_<%=cid%>++;
+		} else {
+			<%=customDatasourceRowName%> = null;
 		}
 <%  } %>

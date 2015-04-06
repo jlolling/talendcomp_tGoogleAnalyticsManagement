@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="5.1" 
+	    VERSION="5.2" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20150123A"
+		RELEASE_DATE="20150406A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -52,6 +52,8 @@
 		<CONNECTOR NAME="WEBPROPERTY_USER_PERMISSIONS" CTYPE="FLOW" MAX_INPUT="0"
 			MAX_OUTPUT="1" LINE_STYLE="1"  />
 		<CONNECTOR NAME="PROFILE_USER_PERMISSIONS" CTYPE="FLOW" MAX_INPUT="0"
+			MAX_OUTPUT="1" LINE_STYLE="1"  />
+		<CONNECTOR NAME="CUSTOM_DATA_SOURCES" CTYPE="FLOW" MAX_INPUT="0"
 			MAX_OUTPUT="1" LINE_STYLE="1"  />
 	</CONNECTORS>
 	<PARAMETERS>
@@ -357,7 +359,7 @@
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this account"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this account"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 			</TABLE>
 		</PARAMETER>
 		<PARAMETER NAME="SCHEMA_WEBPROPERTY_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
@@ -372,7 +374,7 @@
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this Web Property"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this Web Property"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 			</TABLE>
 		</PARAMETER>
 		<PARAMETER NAME="SCHEMA_PROFILE_USER_PERMISSIONS" FIELD="SCHEMA_TYPE"
@@ -389,11 +391,34 @@
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this profile"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this profile"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 			</TABLE>
 		</PARAMETER>
 		<PARAMETER FIELD="CHECK" NAME="IGNORE_PERMISSION_ERRORS" NUM_ROW="130">
 			<DEFAULT>false</DEFAULT>
+		</PARAMETER>
+		<PARAMETER NAME="SCHEMA_CUSTOM_DATA_SOURCES" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="140" CONTEXT="CUSTOM_DATA_SOURCES">
+			<TABLE READONLY="true">
+				<COLUMN NAME="CDS_ID" TYPE="id_String" KEY="true" COMMENT="ID of the custom data source (CDS)"
+					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="Account ID"
+					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="Web Property ID"
+					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+				<COLUMN NAME="CDS_NAME" TYPE="id_String" READONLY="true" COMMENT="Name of the custome data source"
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
+				<COLUMN NAME="CDS_TYPE" TYPE="id_String" READONLY="true" COMMENT="Type like COST or REFUND etc"
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
+				<COLUMN NAME="CDS_IMPORT_BEHAVIOR" TYPE="id_String" READONLY="true" COMMENT="How to handle the uploads. Example: OVERWRITE"
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
+				<COLUMN NAME="CDS_LINKED_PROFILES" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the linked views"
+					CUSTOM="true" LENGTH="512" NULLABLE="true" />
+				<COLUMN NAME="CDS_CREATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10" NULLABLE="false"/>
+				<COLUMN NAME="CDS_UPDATED" TYPE="id_Date" READONLY="true"
+					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
+			</TABLE>
 		</PARAMETER>
 	</PARAMETERS>
 	<ADVANCED_PARAMETERS>
@@ -413,7 +438,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-5.1-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-5.2-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
@@ -430,5 +455,6 @@
 		<RETURN AVAILABILITY="AFTER" NAME="ACCOUNT_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
 		<RETURN AVAILABILITY="AFTER" NAME="WEBPROPERTY_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
 		<RETURN AVAILABILITY="AFTER" NAME="PROFILE_USER_PERMISSIONS_NB_LINE" TYPE="id_Integer" />
+		<RETURN AVAILABILITY="AFTER" NAME="CUSTOM_DATA_SOURCES_NB_LINE" TYPE="id_Integer" />
 	</RETURNS>
 </COMPONENT>

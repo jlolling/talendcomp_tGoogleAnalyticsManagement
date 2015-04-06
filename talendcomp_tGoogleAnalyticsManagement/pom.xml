@@ -27,20 +27,29 @@
     </dependency>
   </dependencies>
   <properties>
-    <project.api.version>v3-rev103-1.19.0</project.api.version>
-    <project.http.version>1.19.0</project.http.version>
-    <project.oauth.version>1.19.0</project.oauth.version>
+    <project.api.version>v3-rev114-1.20.0</project.api.version>
+    <project.http.version>1.20.0</project.http.version>
+    <project.oauth.version>1.20.0</project.oauth.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   <organization>
-  	<name>cimt ag</name>
-  	<url>http://www.cimt-ag.de</url>
+  	<name>Jan Lolling</name>
+  	<url>http://www.jan-lolling.de</url>
   </organization>
   <build>
     <plugins>
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.3</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
+        <version>2.5.3</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -58,5 +67,5 @@
       </plugin>
     </plugins>
   </build>
-  <version>5.1</version>
+  <version>5.2</version>
 </project>
