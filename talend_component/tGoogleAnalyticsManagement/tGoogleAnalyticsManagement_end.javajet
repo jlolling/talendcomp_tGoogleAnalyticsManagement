@@ -21,3 +21,4 @@
 	globalMap.put("<%=cid%>_ACCOUNT_USER_PERMISSIONS_NB_LINE", countAccountUserPermissions_<%=cid%>);
 	globalMap.put("<%=cid%>_WEBPROPERTY_USER_PERMISSIONS_NB_LINE", countWebpropertyUserPermissions_<%=cid%>);
 	globalMap.put("<%=cid%>_PROFILE_USER_PERMISSIONS_NB_LINE", countProfileUserPermissions_<%=cid%>);
+	globalMap.put("<%=cid%>_CUSTOM_DATA_SOURCES_NB_LINE", countCustomDataSources_<%=cid%>);
