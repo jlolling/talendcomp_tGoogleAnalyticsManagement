@@ -271,8 +271,13 @@ public class GoogleAnalyticsManagement {
 		return innerLoopWaitInterval;
 	}
 
-	public void setInnerLoopWaitInterval(long innerLoopWaitInterval) {
-		this.innerLoopWaitInterval = innerLoopWaitInterval;
+	public void setInnerLoopWaitInterval(Number innerLoopWaitInterval) {
+		if (innerLoopWaitInterval != null) {
+			long value = innerLoopWaitInterval.longValue();
+			if (value > 500l) {
+				this.innerLoopWaitInterval = value;
+			}
+		}
 	}
 	
 	private void setMaxRows(int rows) {
@@ -800,6 +805,7 @@ public class GoogleAnalyticsManagement {
 				      profile.getAccountId(),
 				      profile.getWebPropertyId(),
 				      profile.getId()).execute();
+			Thread.sleep(1000);
 			if (reports != null && reports.getItems() != null) {
 				for (UnsampledReport report : reports.getItems()) {
 					listUnsampledReports.add(report);
@@ -835,12 +841,12 @@ public class GoogleAnalyticsManagement {
 		System.out.println("Collect custom data sources...");
 		listCustomDataSources = new ArrayList<CustomDataSource>();
 		for (Webproperty w : listWebProperties) {
-			CustomDataSources dataSources = analyticsClient
+			Thread.sleep(innerLoopWaitInterval);
+ 			CustomDataSources dataSources = analyticsClient
 					.management()
 					.customDataSources()
 					.list(w.getAccountId(), w.getId())
 				    .execute();
-			Thread.sleep(900);
 			if (dataSources != null && dataSources.getItems() != null) {
 				for (CustomDataSource ds : dataSources.getItems()) {
 					listCustomDataSources.add(ds);

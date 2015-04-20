@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="5.2" 
+	    VERSION="5.3" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20150406A"
+		RELEASE_DATE="20150420A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -355,7 +355,7 @@
 				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" KEY="true" READONLY="true" COMMENT="Account ID"
 					CUSTOM="true" LENGTH="22" NULLABLE="false" />
 				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
-					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					READONLY="true" CUSTOM="true" LENGTH="128" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this account"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this account"
@@ -370,7 +370,7 @@
 				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" KEY="true" READONLY="true" COMMENT="Web Property ID"
 					CUSTOM="true" LENGTH="32" NULLABLE="false" />
 				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
-					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					READONLY="true" CUSTOM="true" LENGTH="128" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this Web Property"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this Web Property"
@@ -387,7 +387,7 @@
 				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" KEY="true" READONLY="true" COMMENT="View (Profile) ID"
 					CUSTOM="true" LENGTH="22" NULLABLE="false" />
 				<COLUMN NAME="EMAIL" TYPE="id_String" KEY="true" COMMENT="Email of the User having the permissions"
-					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					READONLY="true" CUSTOM="true" LENGTH="128" NULLABLE="false" />
 				<COLUMN NAME="PERMISSIONS_LOCAL" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the explicit set permissions for this profile"
 					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="PERMISSIONS_EFFECTIVE" TYPE="id_String" READONLY="true" COMMENT="Comma separated list of the effective permissions for this profile"
@@ -434,11 +434,14 @@
 		<PARAMETER FIELD="TEXT" NAME="KEEP_CLIENT_KEY" NUM_ROW="40"
 			SHOW_IF="KEEP_CLIENT == 'true'">
 		</PARAMETER>
+		<PARAMETER FIELD="TEXT" NAME="WAIT_TIME_BETWEEN_REQUESTS" NUM_ROW="45">
+			<DEFAULT>800</DEFAULT>
+		</PARAMETER>
 	</ADVANCED_PARAMETERS>
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-5.2-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-5.3-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
