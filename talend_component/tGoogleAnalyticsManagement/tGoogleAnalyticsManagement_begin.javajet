@@ -50,6 +50,7 @@
     String profileUserPermissionsRowName = null;
     String customDatasourceRowName = null;
 	boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
+	String innerLoopWaitTime = ElementParameterParser.getValue(node, "__WAIT_TIME_BETWEEN_REQUESTS__");
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
@@ -78,6 +79,10 @@
 <% if (timeOffset != null && timeOffset.trim().isEmpty() == false) {%>
 	    <%=cid%>.setTimeOffsetMillisToPast(<%=timeOffset%>);
 <% }%>
+<% if (innerLoopWaitTime != null && innerLoopWaitTime.trim().isEmpty() == false) { %>
+		<%=cid%>.setInnerLoopWaitInterval(<%=innerLoopWaitTime%>);
+<% } %>
+ 
        <%=cid%>.setIgnoreUserPermissionErrors(<%=ignorePermissionErrors%>);
 	    try {
 	        // initialize client with private key
