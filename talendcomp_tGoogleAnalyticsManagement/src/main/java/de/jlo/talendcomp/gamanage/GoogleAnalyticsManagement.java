@@ -10,23 +10,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
+import com.google.api.client.googleapis.json.GoogleJsonError;
+import com.google.api.client.googleapis.json.GoogleJsonError.ErrorInfo;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.GenericJson;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Clock;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.analytics.Analytics;
-import com.google.api.services.analytics.Analytics.Management;
+import com.google.api.services.analytics.AnalyticsRequest;
 import com.google.api.services.analytics.AnalyticsScopes;
 import com.google.api.services.analytics.model.Account;
 import com.google.api.services.analytics.model.Accounts;
@@ -53,6 +59,7 @@ import com.google.api.services.analytics.model.Webproperty;
 
 public class GoogleAnalyticsManagement {
 
+	private Logger logger = null;
 	private static final Map<String, GoogleAnalyticsManagement> clientCache = new HashMap<String, GoogleAnalyticsManagement>();
 	private final HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
 	private final JsonFactory JSON_FACTORY = new JacksonFactory();
@@ -78,7 +85,6 @@ public class GoogleAnalyticsManagement {
 	private List<Column> listColumns;
 	private List<UnsampledReport> listUnsampledReports;
 	private List<CustomDataSource> listCustomDataSources;
-	private long mainWaitInterval = 2000;
 	private long innerLoopWaitInterval = 500;
 	private int maxRows = 0;
 	private int currentIndex = 0;
@@ -259,37 +265,81 @@ public class GoogleAnalyticsManagement {
 		this.ignoreUserPermissionErrors = ignoreUserPermissionErrors;
 	}
 
-	public long getMainWaitInterval() {
-		return mainWaitInterval;
-	}
-
-	public void setMainWaitInterval(long mainWaitInterval) {
-		this.mainWaitInterval = mainWaitInterval;
-	}
-
-	public long getInnerLoopWaitInterval() {
-		return innerLoopWaitInterval;
-	}
-
-	public void setInnerLoopWaitInterval(Number innerLoopWaitInterval) {
-		if (innerLoopWaitInterval != null) {
-			long value = innerLoopWaitInterval.longValue();
-			if (value > 500l) {
-				this.innerLoopWaitInterval = value;
-			}
-		}
-	}
-	
 	private void setMaxRows(int rows) {
 		if (maxRows < rows) {
 			maxRows = rows;
 		}
 	}
 	
+	private int maxRetriesInCaseOfErrors = 5;
+	private int currentAttempt = 0;
+	private int errorCode = 0;
+	private String errorMessage = null;
+
+	private com.google.api.client.json.GenericJson execute(AnalyticsRequest<?> request) throws IOException {
+		com.google.api.client.json.GenericJson response = null;
+		int waitTime = 1000;
+		for (currentAttempt = 0; currentAttempt < maxRetriesInCaseOfErrors; currentAttempt++) {
+			errorCode = 0;
+			try {
+				response = (GenericJson) request.execute();
+				break;
+			} catch (IOException ge) {
+				boolean isPermissionError = false;
+				if (ge instanceof GoogleJsonResponseException) {
+					 GoogleJsonError gje = ((GoogleJsonResponseException) ge).getDetails();
+					 if (gje != null) {
+						 List<ErrorInfo> errors = gje.getErrors();
+						 if (errors != null && errors.isEmpty() == false) {
+							 ErrorInfo ei = errors.get(0);
+							 if ("insufficientPermissions".equalsIgnoreCase(ei.getReason())) {
+								 isPermissionError = true;
+							 }
+						 }
+					 }
+				}
+				if (isPermissionError) {
+					if (ignoreUserPermissionErrors) {
+						info("Permission error ignored. Element skipped.");
+						break;
+					} else {
+						throw ge; // it does not makes sense to repeat request which fails because of permissions
+					}
+				} else {
+					if (ge instanceof HttpResponseException) {
+						errorCode = ((HttpResponseException) ge).getStatusCode();
+					}
+					warn("Got error:" + ge.getMessage());
+					if (currentAttempt == (maxRetriesInCaseOfErrors - 1)) {
+						error("All repetition of requests failed:" + ge.getMessage(), ge);
+						throw ge;
+					} else {
+						// wait
+						try {
+							info("Retry request in " + waitTime + "ms");
+							Thread.sleep(waitTime);
+						} catch (InterruptedException ie) {}
+						waitTime = waitTime * 2;
+					}
+				}
+			}
+			try {
+				Thread.sleep(innerLoopWaitInterval);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		return response;
+	}
+	
 	public void collectAccounts() throws IOException {
-		System.out.println("Collect accounts...");
+		info("Collect accounts...");
 		listAccounts = new ArrayList<Account>();
-		Accounts accounts = analyticsClient.management().accounts().list().execute();
+		Accounts accounts = (Accounts) execute(
+				analyticsClient
+				.management()
+				.accounts()
+				.list());
 		if (accounts != null) {
 			for (Account account : accounts.getItems()) {
 				listAccounts.add(account);
@@ -302,15 +352,15 @@ public class GoogleAnalyticsManagement {
 		if (listAccounts == null) {
 			collectAccounts();
 		}
-		System.out.println("Collect web properties...");
+		info("Collect web properties...");
 		listWebProperties = new ArrayList<Webproperty>();
 		for (Account account : listAccounts) {
-			Thread.sleep(innerLoopWaitInterval);
-			Webproperties webproperties = analyticsClient
+			info("* account: " + account.getId());
+			Webproperties webproperties = (Webproperties) execute(
+					analyticsClient
 					.management()
 					.webproperties()
-					.list(account.getId())
-					.execute();
+					.list(account.getId()));
 			if (webproperties != null) {
 				for (Webproperty webproperty : webproperties.getItems()) {
 					listWebProperties.add(webproperty);
@@ -324,35 +374,24 @@ public class GoogleAnalyticsManagement {
 		if (listWebProperties == null) {
 			collectWebProperties();
 		}
-		System.out.println("Collect views (profiles)...");
+		info("Collect views (profiles)...");
 		listProfiles = new ArrayList<Profile>();
 		for (Webproperty webproperty : listWebProperties) {
-			Thread.sleep(innerLoopWaitInterval);
-			final Management man = analyticsClient.management();
-			if (man == null) {
-				throw new Exception("Got none management object");
-			}
-			final com.google.api.services.analytics.Analytics.Management.Profiles manProfiles = man.profiles();
-			if (manProfiles == null) {
-				throw new Exception("Got none management profiles");
-			}
-			final com.google.api.services.analytics.Analytics.Management.Profiles.List list = manProfiles.list(webproperty.getAccountId(), webproperty.getId());
-			if (list == null) {
-				throw new Exception("Got none Profiles.List");
-			}
-			final Profiles profiles = list.execute();
-			if (profiles == null) {
-				throw new Exception("Got none response from list request");
-			}
-			final List<Profile> listProfilesForWebproperty = profiles.getItems();
-			if (listProfilesForWebproperty == null) {
-				System.err.println("Got none list of profiles for web property id:" + webproperty.getId() + ", website url:" + webproperty.getWebsiteUrl());
-			} else {
-				final int countProfiles = listProfilesForWebproperty.size();
-				for (int i = 0; i < countProfiles; i++) {
-					final Profile profile = listProfilesForWebproperty.get(i);
-					if (profile != null) {
-						listProfiles.add(profile);
+			info("* web property: " + webproperty.getId());
+			final Profiles profiles = (Profiles) execute(
+					analyticsClient
+					.management()
+					.profiles()
+					.list(webproperty.getAccountId(), webproperty.getId()));
+			if (profiles != null) {
+				final List<Profile> listProfilesForWebproperty = profiles.getItems();
+				if (listProfilesForWebproperty != null) {
+					final int countProfiles = listProfilesForWebproperty.size();
+					for (int i = 0; i < countProfiles; i++) {
+						final Profile profile = listProfilesForWebproperty.get(i);
+						if (profile != null) {
+							listProfiles.add(profile);
+						}
 					}
 				}
 			}
@@ -364,14 +403,15 @@ public class GoogleAnalyticsManagement {
 		if (listProfiles == null) {
 			collectProfiles();
 		}
-		System.out.println("Collect goals...");
+		info("Collect goals...");
 		listGoals = new ArrayList<Goal>();
 		for (Profile profile : listProfiles) {
-			Thread.sleep(innerLoopWaitInterval);
-			Goals goals = analyticsClient.management()
+			info("* view: " + profile.getId());
+			Goals goals = (Goals) execute(
+					analyticsClient
+					.management()
 					.goals()
-					.list(profile.getAccountId(), profile.getWebPropertyId(), profile.getId())
-					.execute();
+					.list(profile.getAccountId(), profile.getWebPropertyId(), profile.getId()));
 			if (goals != null) {
 				List<Goal> list = goals.getItems();
 				if (list != null) {
@@ -390,9 +430,10 @@ public class GoogleAnalyticsManagement {
 		if (listGoals == null) {
 			collectGoals();
 		}
-		System.out.println("Collect goal url destination steps...");
+		info("Collect goal url destination steps...");
 		listGoalUrlDestinationSteps = new ArrayList<GoalUrlDestinationStepWrapper>();
 		for (Goal goal : listGoals) {
+			info("* goal: " + goal.getId());
 			UrlDestinationDetails urlDetails = goal.getUrlDestinationDetails();
 			if (urlDetails != null && urlDetails.getSteps() != null) {
 				int index = 0;
@@ -413,9 +454,10 @@ public class GoogleAnalyticsManagement {
 		if (listGoals == null) {
 			collectGoals();
 		}
-		System.out.println("Collect goal event conditions...");
+		info("Collect goal event conditions...");
 		listGoalEventConditions = new ArrayList<GoalEventConditionWrapper>();
 		for (Goal goal : listGoals) {
+			info("* goal: " + goal.getId());
 			EventDetails eventDetails = goal.getEventDetails();
 			if (eventDetails != null && eventDetails.getEventConditions() != null) {
 				int index = 0;
@@ -433,12 +475,12 @@ public class GoogleAnalyticsManagement {
 	}
 
 	public void collectSegments() throws Exception {
-		System.out.println("Collect segments...");
+		info("Collect segments...");
 		listSegments = new ArrayList<Segment>();
-		Segments segments = analyticsClient.management()
+		Segments segments = (Segments) execute(
+				analyticsClient.management()
 				.segments()
-				.list()
-				.execute();
+				.list());
 		if (segments != null && segments.getItems() != null) {
 			for (Segment segment : segments.getItems()) {
 				listSegments.add(segment);
@@ -451,18 +493,18 @@ public class GoogleAnalyticsManagement {
 		if (listProfiles == null) {
 			collectProfiles();
 		}
-		System.out.println("Collect users permissions for views...");
+		info("Collect users permissions for views...");
 		listUserLinksForProfiles = new ArrayList<ProfileUserPermission>();
 		for (Profile p : listProfiles) {
-			 Thread.sleep(innerLoopWaitInterval);
-			 try {
-				 EntityUserLinks eul = analyticsClient.management()
-					.profileUserLinks()
-					.list(
-							p.getAccountId(),
-							p.getWebPropertyId(),
-							p.getId())
-					.execute();
+			 info("* view: " + p.getId());
+			 EntityUserLinks eul = (EntityUserLinks) execute(
+					 analyticsClient.management()
+						.profileUserLinks()
+						.list(
+								p.getAccountId(),
+								p.getWebPropertyId(),
+								p.getId()));
+			 if (eul != null) {
 				 for (EntityUserLink e : eul.getItems()) {
 					 ProfileUserPermission u = new ProfileUserPermission();
 					 u.setAccountId(Long.valueOf(p.getAccountId()));
@@ -476,12 +518,6 @@ public class GoogleAnalyticsManagement {
 					 }
 					 listUserLinksForProfiles.add(u);
 				 }
-			 } catch (GoogleJsonResponseException e) {
-				 if (ignoreUserPermissionErrors) {
-					 System.err.println("Collect users permissions for profile (view): " + p.getId() + " failed: " + e.getMessage());
-				 } else {
-					 throw e;
-				 }
 			 }
 		}
 		setMaxRows(listUserLinksForProfiles.size());
@@ -491,36 +527,28 @@ public class GoogleAnalyticsManagement {
 		if (listWebProperties == null) {
 			collectWebProperties();
 		}
-		System.out.println("Collect users permissions for web properties...");
+		info("Collect users permissions for web properties...");
 		listUserLinksForWebProperties = new ArrayList<WebPropertyUserPermission>();
 		for (Webproperty p : listWebProperties) {
-			 Thread.sleep(innerLoopWaitInterval);
-			 try {
-				 EntityUserLinks eul = analyticsClient.management()
-							.webpropertyUserLinks()
-							.list(
-									p.getAccountId(), 
-									p.getId())
-							.execute();
-				 for (EntityUserLink e : eul.getItems()) {
-					 WebPropertyUserPermission u = new WebPropertyUserPermission();
-					 u.setAccountId(Long.valueOf(p.getAccountId()));
-					 u.setWebPropertyId(p.getId());
-					 u.setEmail(e.getUserRef().getEmail());
-					 EntityUserLink.Permissions per = e.getPermissions();
-					 if (per != null) {
-						 u.setEffectivePermissions(per.getEffective());
-						 u.setLocalPermissions(per.getLocal());
-					 }
-					 listUserLinksForWebProperties.add(u);
-				 }
-			 } catch (GoogleJsonResponseException e) {
-				 if (ignoreUserPermissionErrors) {
-					 System.err.println("Collect users permissions for web property: " + p.getId() + " failed: " + e.getMessage());
-				 } else {
-					 throw e;
-				 }
-			 }
+			info("* web property: " + p.getId());
+			EntityUserLinks eul = (EntityUserLinks) execute(
+					analyticsClient
+					.management().webpropertyUserLinks()
+					.list(p.getAccountId(), p.getId()));
+			if (eul != null) {
+				for (EntityUserLink e : eul.getItems()) {
+					WebPropertyUserPermission u = new WebPropertyUserPermission();
+					u.setAccountId(Long.valueOf(p.getAccountId()));
+					u.setWebPropertyId(p.getId());
+					u.setEmail(e.getUserRef().getEmail());
+					EntityUserLink.Permissions per = e.getPermissions();
+					if (per != null) {
+						u.setEffectivePermissions(per.getEffective());
+						u.setLocalPermissions(per.getLocal());
+					}
+					listUserLinksForWebProperties.add(u);
+				}
+			}
 		}
 		setMaxRows(listUserLinksForWebProperties.size());
 	}
@@ -529,19 +557,18 @@ public class GoogleAnalyticsManagement {
 		if (listAccounts == null) {
 			collectAccounts();
 		}
-		System.out.println("Collect users permissions for accounts...");
+		info("Collect users permissions for accounts...");
 		listUserLinksForAccounts = new ArrayList<AccountUserPermission>();
-		for (Account p : listAccounts) {
-			 Thread.sleep(innerLoopWaitInterval);
-			 try {
-				 EntityUserLinks eul = analyticsClient.management()
+		for (Account a : listAccounts) {
+			 info("* account: " + a.getId());
+			 EntityUserLinks eul = (EntityUserLinks) execute(
+						analyticsClient.management()
 							.accountUserLinks()
-							.list(
-									p.getId())
-							.execute();
+							.list(a.getId()));
+			 if (eul != null) {
 				 for (EntityUserLink e : eul.getItems()) {
 					 AccountUserPermission u = new AccountUserPermission();
-					 u.setAccountId(Long.valueOf(p.getId()));
+					 u.setAccountId(Long.valueOf(a.getId()));
 					 u.setEmail(e.getUserRef().getEmail());
 					 EntityUserLink.Permissions per = e.getPermissions();
 					 if (per != null) {
@@ -549,12 +576,6 @@ public class GoogleAnalyticsManagement {
 						 u.setLocalPermissions(per.getLocal());
 					 }
 					 listUserLinksForAccounts.add(u);
-				 }
-			 } catch (GoogleJsonResponseException e) {
-				 if (ignoreUserPermissionErrors) {
-					 System.err.println("Collect users permissions for account: " + p.getId() + " failed: " + e.getMessage());
-				 } else {
-					 throw e;
 				 }
 			 }
 		}
@@ -768,8 +789,12 @@ public class GoogleAnalyticsManagement {
 	}
 
 	public void collectColumns() throws Exception {
-		System.out.println("Collect metric and dimension metadata...");
-		Columns columns = analyticsClient.metadata().columns().list("ga").execute();
+		info("Collect metric and dimension metadata...");
+		Columns columns = (Columns) execute(
+				analyticsClient
+				.metadata()
+				.columns()
+				.list("ga"));
 		listColumns = columns.getItems();
 		setMaxRows(listColumns.size());
 	}
@@ -797,15 +822,17 @@ public class GoogleAnalyticsManagement {
 		if (listProfiles == null) {
 			collectProfiles();
 		}
-		System.out.println("Collect unsampled reports...");
+		info("Collect unsampled reports...");
 		listUnsampledReports = new ArrayList<UnsampledReport>();
 		for (Profile profile : listProfiles) {
-			Thread.sleep(innerLoopWaitInterval);
-			UnsampledReports reports = analyticsClient.management().unsampledReports().list(
+			info("* view: " + profile.getId());
+			UnsampledReports reports = (UnsampledReports) execute(
+					analyticsClient
+					.management()
+					.unsampledReports().list(
 				      profile.getAccountId(),
 				      profile.getWebPropertyId(),
-				      profile.getId()).execute();
-			Thread.sleep(1000);
+				      profile.getId()));
 			if (reports != null && reports.getItems() != null) {
 				for (UnsampledReport report : reports.getItems()) {
 					listUnsampledReports.add(report);
@@ -838,15 +865,15 @@ public class GoogleAnalyticsManagement {
 		if (listWebProperties == null) {
 			collectWebProperties();
 		}
-		System.out.println("Collect custom data sources...");
+		info("Collect custom data sources...");
 		listCustomDataSources = new ArrayList<CustomDataSource>();
 		for (Webproperty w : listWebProperties) {
-			Thread.sleep(innerLoopWaitInterval);
- 			CustomDataSources dataSources = analyticsClient
+			info("* web property: " + w.getId());
+ 			CustomDataSources dataSources = (CustomDataSources) execute(
+ 					analyticsClient
 					.management()
 					.customDataSources()
-					.list(w.getAccountId(), w.getId())
-				    .execute();
+					.list(w.getAccountId(), w.getId()));
 			if (dataSources != null && dataSources.getItems() != null) {
 				for (CustomDataSource ds : dataSources.getItems()) {
 					listCustomDataSources.add(ds);
@@ -896,6 +923,65 @@ public class GoogleAnalyticsManagement {
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+
+	public void info(String message) {
+		if (logger != null) {
+			logger.info(message);
+		} else {
+			System.out.println("INFO:" + message);
+		}
+	}
+	
+	public void debug(String message) {
+		if (logger != null) {
+			logger.debug(message);
+		} else {
+			System.out.println("DEBUG:" + message);
+		}
+	}
+
+	public void warn(String message) {
+		if (logger != null) {
+			logger.warn(message);
+		} else {
+			System.err.println("WARN:" + message);
+		}
+	}
+
+	public void error(String message, Exception e) {
+		if (logger != null) {
+			logger.error(message, e);
+		} else {
+			System.err.println("ERROR:" + message);
+		}
+	}
+
+	public void setLogger(Logger logger) {
+		this.logger = logger;
+	}
+
+	public void setInnerLoopWaitInterval(Number innerLoopWaitInterval) {
+		if (innerLoopWaitInterval != null) {
+			long value = innerLoopWaitInterval.longValue();
+			if (value > 500l) {
+				this.innerLoopWaitInterval = value;
+			}
+		}
+	}
+	
+	public void setMaxRetriesInCaseOfErrors(Integer maxRetriesInCaseOfErrors) {
+		if (maxRetriesInCaseOfErrors != null && maxRetriesInCaseOfErrors > 0) {
+			this.maxRetriesInCaseOfErrors = maxRetriesInCaseOfErrors;
+		}
+	}
+
+	public int getErrorCode() {
+		return errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
 	}
 
 }

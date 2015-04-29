@@ -1,6 +1,7 @@
 import java.util.Date;
 
 import com.google.api.services.analytics.model.Account;
+import com.google.api.services.analytics.model.CustomDataSource;
 import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Segment;
 import com.google.api.services.analytics.model.Webproperty;
@@ -21,25 +22,27 @@ public class TestGoogleAnalyticsManagement {
 		GoogleAnalyticsManagement gm = new GoogleAnalyticsManagement();
 		gm.setApplicationName("GATalendComp");
 
-//		gm.setAccountEmail("503880615382@developer.gserviceaccount.com");
-//		gm.setKeyFile("/var/testdata/ga/config/2bc309bb904201fcc6a443ff50a3d8aca9c0a12c-privatekey.p12");
+		gm.setAccountEmail("503880615382@developer.gserviceaccount.com");
+		gm.setKeyFile("/var/testdata/ga/config/2bc309bb904201fcc6a443ff50a3d8aca9c0a12c-privatekey.p12");
 
-		gm.setAccountEmail("422451649636@developer.gserviceaccount.com");
-		gm.setKeyFile("/var/testdata/ga/config/af21f07c84b14af09c18837c5a385f8252cc9439-privatekey.p12");
+//		gm.setAccountEmail("422451649636@developer.gserviceaccount.com");
+//		gm.setKeyFile("/var/testdata/ga/config/af21f07c84b14af09c18837c5a385f8252cc9439-privatekey.p12");
 		gm.setTimeOffsetMillisToPast(10000);
 		gm.setTimeoutInSeconds(240);
 		gm.reset();
 		try {
 			System.out.println("initialize client....");
 			gm.initializeAnalyticsClient();
-//			System.out.println("collect accounts....");
-//			gm.collectAccounts();
-//			System.out.println("collect webproperties....");
-//			gm.collectWebProperties();
-			System.out.println("collect profiles....");
-			gm.collectProfiles();
+			System.out.println("collect accounts....");
+			gm.collectAccounts();
+			System.out.println("collect webproperties....");
+			gm.collectWebProperties();
+//			System.out.println("collect profiles....");
+//			gm.collectProfiles();
 //			System.out.println("collect segments....");
 //			gm.collectSegments();
+			System.out.println("collect custom data sources....");
+			gm.collectCustomDataSources();
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -69,6 +72,23 @@ public class TestGoogleAnalyticsManagement {
 				System.out.println("segment name:" + segment.getName());
 				System.out.println("segment def:" + segment.getDefinition());
 				System.out.println("segment kind:" + segment.getKind());
+			}
+			if (gm.hasCurrentCustomDataSource()) {
+				CustomDataSource ds = gm.getCurrentCustomDataSource();
+				System.out.println("ID=" + ds.getId());
+				System.out.println("Name=" + ds.getName());
+				System.out.println("Description=" + ds.getDescription());
+				System.out.println("Account=" + ds.getAccountId());
+				System.out.println("WebPropertyId=" + ds.getWebPropertyId());
+				System.out.println("Import behavior=" + ds.getImportBehavior());
+				System.out.println("Type=" + ds.getType());
+				System.out.println("Created at=" + ds.getCreated());
+				System.out.println("Updated at=" + ds.getUpdated());
+				System.out.println("Profiles linked=" + GoogleAnalyticsManagement.buildChain(ds.getProfilesLinked(),"|"));
+				System.out.println("Unknown keys=" + ds.getUnknownKeys());
+				System.out.println();
+			} else {
+				break;
 			}
 		}
 		// System.out.println("############################# " + i +
