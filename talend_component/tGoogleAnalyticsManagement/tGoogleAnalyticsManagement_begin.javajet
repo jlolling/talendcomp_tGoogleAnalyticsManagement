@@ -18,6 +18,7 @@
     String applicationName = ElementParameterParser.getValue(node, "__APPLICATION_NAME__");
 	 String accountEmail = ElementParameterParser.getValue(node, "__SERVICE_ACCOUNT_EMAIL__");
 	 String keyFile = ElementParameterParser.getValue(node, "__KEY_FILE__");
+	String maxAttempts = ElementParameterParser.getValue(node, "__MAX_ATTEMPTS__");
 	 String timeout = ElementParameterParser.getValue(node, "__TIMEOUT_IN_SEC__");
 	 String timeOffset = ElementParameterParser.getValue(node, "__TIME_OFFSET__");
 	 String keepClient = ElementParameterParser.getValue(node, "__KEEP_CLIENT__");
@@ -50,6 +51,7 @@
     String profileUserPermissionsRowName = null;
     String customDatasourceRowName = null;
 	boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
+	String maxAttempts = ElementParameterParser.getValue(node, "__MAX_ATTEMPTS__");
 	String innerLoopWaitTime = ElementParameterParser.getValue(node, "__WAIT_TIME_BETWEEN_REQUESTS__");
 %>
     // start creating client
@@ -82,7 +84,9 @@
 <% if (innerLoopWaitTime != null && innerLoopWaitTime.trim().isEmpty() == false) { %>
 		<%=cid%>.setInnerLoopWaitInterval(<%=innerLoopWaitTime%>);
 <% } %>
- 
+<% if (maxAttempts != null && maxAttempts.trim().isEmpty() == false) { %>
+    	<%=cid%>.setMaxRetriesInCaseOfErrors(<%=maxAttempts%>);
+<% } %>
        <%=cid%>.setIgnoreUserPermissionErrors(<%=ignorePermissionErrors%>);
 	    try {
 	        // initialize client with private key

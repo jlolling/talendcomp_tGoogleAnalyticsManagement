@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="5.3" 
+	    VERSION="5.5" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20150420A"
+		RELEASE_DATE="20150426A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -422,6 +422,9 @@
 		</PARAMETER>
 	</PARAMETERS>
 	<ADVANCED_PARAMETERS>
+		<PARAMETER FIELD="TEXT" NAME="MAX_ATTEMPTS" NUM_ROW="5" >
+			<DEFAULT>5</DEFAULT>
+		</PARAMETER>
 		<PARAMETER FIELD="TEXT" NAME="TIMEOUT_IN_SEC" NUM_ROW="10">
 			<DEFAULT>240</DEFAULT>
 		</PARAMETER>
@@ -441,7 +444,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-5.3-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-5.5-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
