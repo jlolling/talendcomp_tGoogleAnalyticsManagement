@@ -1,3 +1,18 @@
+/**
+ * Copyright 2015 Jan Lolling jan.lolling@gmail.com
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package de.jlo.talendcomp.gamanage;
 
 import java.io.File;
@@ -19,7 +34,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.json.GoogleJsonError;
-import com.google.api.client.googleapis.json.GoogleJsonError.ErrorInfo;
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestInitializer;
@@ -285,20 +299,16 @@ public class GoogleAnalyticsManagement {
 				response = (GenericJson) request.execute();
 				break;
 			} catch (IOException ge) {
-				boolean isPermissionError = false;
+				boolean stopImmediately = false;
 				if (ge instanceof GoogleJsonResponseException) {
-					 GoogleJsonError gje = ((GoogleJsonResponseException) ge).getDetails();
-					 if (gje != null) {
-						 List<ErrorInfo> errors = gje.getErrors();
-						 if (errors != null && errors.isEmpty() == false) {
-							 ErrorInfo ei = errors.get(0);
-							 if ("insufficientPermissions".equalsIgnoreCase(ei.getReason())) {
-								 isPermissionError = true;
-							 }
-						 }
-					 }
+					GoogleJsonError gje = ((GoogleJsonResponseException) ge).getDetails();
+					if (gje != null) {
+						if (gje.getCode() != 500) {
+							stopImmediately = true;
+						}
+					}
 				}
-				if (isPermissionError) {
+				if (stopImmediately) {
 					if (ignoreUserPermissionErrors) {
 						info("Permission error ignored. Element skipped.");
 						break;
