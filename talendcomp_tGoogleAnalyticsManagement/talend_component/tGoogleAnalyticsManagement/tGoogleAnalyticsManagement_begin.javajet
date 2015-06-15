@@ -37,6 +37,7 @@
     List<? extends IConnection> connsWebpropertyUserPermissions = node.getOutgoingConnections("WEBPROPERTY_USER_PERMISSIONS");
     List<? extends IConnection> connsProfileUserPermissions = node.getOutgoingConnections("PROFILE_USER_PERMISSIONS");
     List<? extends IConnection> connsCustomDatasources = node.getOutgoingConnections("CUSTOM_DATA_SOURCES");
+    List<? extends IConnection> connsAdWordsLinks = node.getOutgoingConnections("ADWORDS_LINKS");
     String accountRowName = null;
     String webpropertyRowName = null;
     String profileRowName = null;
@@ -50,8 +51,8 @@
     String webpropertyUserPermissionsRowName = null;
     String profileUserPermissionsRowName = null;
     String customDatasourceRowName = null;
+    String adWordsLinksRowName = null;
 	boolean ignorePermissionErrors = "true".equals(ElementParameterParser.getValue(node, "__IGNORE_PERMISSION_ERRORS__"));
-	String maxAttempts = ElementParameterParser.getValue(node, "__MAX_ATTEMPTS__");
 	String innerLoopWaitTime = ElementParameterParser.getValue(node, "__WAIT_TIME_BETWEEN_REQUESTS__");
 %>
     // start creating client
@@ -180,6 +181,12 @@
     		customDatasourceRowName = connTemp.getName();
     	}
     }
+    if (connsAdWordsLinks != null && connsAdWordsLinks.size() > 0) {
+    	IConnection connTemp = connsAdWordsLinks.get(0);
+    	if (connTemp.getLineStyle().hasConnectionCategory(IConnectionCategory.DATA)) {
+    		adWordsLinksRowName = connTemp.getName();
+    	}
+    }
 %>
     <%=cid%>.reset();
 	try {
@@ -225,6 +232,10 @@
 	    // collect custom data sources
 		<%=cid%>.collectCustomDataSources();
 <%  }
+    if (adWordsLinksRowName != null) { %>
+	    // collect AdWords Links
+		<%=cid%>.collectAdWordsLinks();
+<%  }
 %>
 	    System.out.println("Collecting data finished.");
     } catch (Exception e) {
@@ -244,6 +255,7 @@
     int countWebpropertyUserPermissions_<%=cid%> = 0;
     int countProfileUserPermissions_<%=cid%> = 0;
     int countCustomDataSources_<%=cid%> = 0;
+    int countAdWordsLinks_<%=cid%> = 0;
     while (<%=cid%>.next()) {
 		// loop through all elements
 <%  if (accountRowName != null) { %>
@@ -477,5 +489,23 @@
 			countCustomDataSources_<%=cid%>++;
 		} else {
 			<%=customDatasourceRowName%> = null;
+		}
+<%  } %>
+<%  if (adWordsLinksRowName != null) { %>
+		if (<%=cid%>.hasCurrentAdWordsLink()) {
+		   <%=adWordsLinksRowName%> = new <%=adWordsLinksRowName%>Struct();
+		   de.jlo.talendcomp.gamanage.AdWordsLink link = <%=cid%>.getCurrentAdWordsLink();
+		   <%=adWordsLinksRowName%>.ADWORDS_LINK_ID = link.getId();
+		   <%=adWordsLinksRowName%>.ADWORDS_LINK_NAME = link.getName();
+		   <%=adWordsLinksRowName%>.ADWORDS_LINK_SELFLINK = link.getSelfLink();
+		   <%=adWordsLinksRowName%>.ADWORDS_CUSTOMER_ID = link.getCustomerId();
+		   <%=adWordsLinksRowName%>.ADWORDS_IS_AUTO_TAGGING_ENABLED = link.isAutoTaggingEnabled();
+		   <%=adWordsLinksRowName%>.ACCOUNT_ID = link.getAccountId();
+		   <%=adWordsLinksRowName%>.WEBPROPERTY_ID = link.getWebpropertyId();
+		   <%=adWordsLinksRowName%>.WEBPROPERTY_NAME = link.getWebpropertyName();
+		   <%=adWordsLinksRowName%>.PROFILE_ID = link.getProfileId();
+		   countAdWordsLinks_<%=cid%>++; 
+		} else {
+		   <%=adWordsLinksRowName%> = null;
 		}
 <%  } %>
