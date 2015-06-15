@@ -50,8 +50,11 @@ import com.google.api.services.analytics.AnalyticsRequest;
 import com.google.api.services.analytics.AnalyticsScopes;
 import com.google.api.services.analytics.model.Account;
 import com.google.api.services.analytics.model.Accounts;
+import com.google.api.services.analytics.model.AdWordsAccount;
 import com.google.api.services.analytics.model.Column;
 import com.google.api.services.analytics.model.Columns;
+import com.google.api.services.analytics.model.EntityAdWordsLink;
+import com.google.api.services.analytics.model.EntityAdWordsLinks;
 import com.google.api.services.analytics.model.EntityUserLink;
 import com.google.api.services.analytics.model.EntityUserLinks;
 import com.google.api.services.analytics.model.Goal;
@@ -68,6 +71,7 @@ import com.google.api.services.analytics.model.Segment;
 import com.google.api.services.analytics.model.Segments;
 import com.google.api.services.analytics.model.UnsampledReport;
 import com.google.api.services.analytics.model.UnsampledReports;
+import com.google.api.services.analytics.model.WebPropertyRef;
 import com.google.api.services.analytics.model.Webproperties;
 import com.google.api.services.analytics.model.Webproperty;
 
@@ -99,6 +103,7 @@ public class GoogleAnalyticsManagement {
 	private List<Column> listColumns;
 	private List<UnsampledReport> listUnsampledReports;
 	private List<CustomDataSource> listCustomDataSources;
+	private List<AdWordsLink> listAdWordsLinks;
 	private long innerLoopWaitInterval = 500;
 	private int maxRows = 0;
 	private int currentIndex = 0;
@@ -251,6 +256,7 @@ public class GoogleAnalyticsManagement {
 		listUserLinksForWebProperties = null;
 		listUserLinksForAccounts = null;
 		listCustomDataSources = null;
+		listAdWordsLinks = null;
 		maxRows = 0;
 		currentIndex = 0;
 	}
@@ -300,16 +306,21 @@ public class GoogleAnalyticsManagement {
 				break;
 			} catch (IOException ge) {
 				boolean stopImmediately = false;
+				boolean permissionError = false;
+				warn("Got error:" + ge.getMessage());
 				if (ge instanceof GoogleJsonResponseException) {
 					GoogleJsonError gje = ((GoogleJsonResponseException) ge).getDetails();
 					if (gje != null) {
 						if (gje.getCode() != 500) {
 							stopImmediately = true;
+							if (gje.getMessage().toLowerCase().contains("permission")) {
+								permissionError = true;
+							}
 						}
 					}
 				}
 				if (stopImmediately) {
-					if (ignoreUserPermissionErrors) {
+					if (permissionError && ignoreUserPermissionErrors) {
 						info("Permission error ignored. Element skipped.");
 						break;
 					} else {
@@ -319,7 +330,6 @@ public class GoogleAnalyticsManagement {
 					if (ge instanceof HttpResponseException) {
 						errorCode = ((HttpResponseException) ge).getStatusCode();
 					}
-					warn("Got error:" + ge.getMessage());
 					if (currentAttempt == (maxRetriesInCaseOfErrors - 1)) {
 						error("All repetition of requests failed:" + ge.getMessage(), ge);
 						throw ge;
@@ -333,12 +343,10 @@ public class GoogleAnalyticsManagement {
 					}
 				}
 			}
-			try {
-				Thread.sleep(innerLoopWaitInterval);
-			} catch (InterruptedException e) {
-				break;
-			}
 		}
+		try {
+			Thread.sleep(innerLoopWaitInterval);
+		} catch (InterruptedException e) {}
 		return response;
 	}
 	
@@ -907,6 +915,76 @@ public class GoogleAnalyticsManagement {
 		}
 		if (currentIndex <= listCustomDataSources.size()) {
 			return listCustomDataSources.get(currentIndex - 1);
+		} else {
+			return null;
+		}
+	}
+	
+	public void collectAdWordsLinks() throws Exception {
+		if (listWebProperties == null) {
+			collectWebProperties();
+		}
+		info("Collect AdWords Links...");
+		listAdWordsLinks = new ArrayList<AdWordsLink>();
+		for (Webproperty w : listWebProperties) {
+			info("* web property: " + w.getId());
+			EntityAdWordsLinks adWordsLinks = (EntityAdWordsLinks) execute(
+ 					analyticsClient
+					.management()
+					.webPropertyAdWordsLinks()
+					.list(w.getAccountId(), w.getId())
+					);
+			for (EntityAdWordsLink link : adWordsLinks.getItems()) {
+				List<String> profileIds = link.getProfileIds();
+				WebPropertyRef property  = link.getEntity().getWebPropertyRef();
+				List<AdWordsAccount> adWordsAccounts = link.getAdWordsAccounts();
+				for (AdWordsAccount account : adWordsAccounts) {
+					if (profileIds != null && profileIds.isEmpty() == false) {
+						for (String profileId : profileIds) {
+							AdWordsLink ag = new AdWordsLink();
+							ag.setId(link.getId());
+							ag.setSelfLink(link.getSelfLink());
+							ag.setName(link.getName());
+							ag.setAccountId(Long.parseLong(property.getAccountId()));
+							ag.setWebpropertyId(property.getId());
+							ag.setWebpropertyName(property.getName());
+							ag.setCustomerId(account.getCustomerId());
+							ag.setAutoTaggingEnabled(account.getAutoTaggingEnabled());
+							ag.setProfileId(Long.parseLong(profileId));
+							listAdWordsLinks.add(ag);
+						}
+					} else {
+						AdWordsLink ag = new AdWordsLink();
+						ag.setId(link.getId());
+						ag.setSelfLink(link.getSelfLink());
+						ag.setName(link.getName());
+						ag.setAccountId(Long.parseLong(property.getAccountId()));
+						ag.setWebpropertyId(property.getId());
+						ag.setWebpropertyName(property.getName());
+						ag.setCustomerId(account.getCustomerId());
+						ag.setAutoTaggingEnabled(account.getAutoTaggingEnabled());
+						listAdWordsLinks.add(ag);
+					}
+				}
+			}
+		}
+		setMaxRows(listAdWordsLinks.size());
+	}
+
+	public boolean hasCurrentAdWordsLink() {
+		if (listAdWordsLinks != null) {
+			return currentIndex <= listAdWordsLinks.size();
+		} else {
+			return false;
+		}
+	}
+	
+	public AdWordsLink getCurrentAdWordsLink() {
+		if (currentIndex == 0) {
+			throw new IllegalStateException("Call next before!");
+		}
+		if (currentIndex <= listAdWordsLinks.size()) {
+			return listAdWordsLinks.get(currentIndex - 1);
 		} else {
 			return null;
 		}
