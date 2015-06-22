@@ -422,27 +422,27 @@
 					CUSTOM="true" PATTERN="&quot;yyyy-MM-dd HH:mm:ss&quot;" LENGTH="10"/>
 			</TABLE>
 		</PARAMETER>
-		<PARAMETER NAME="SCHEMA_ADWORDS_LINK" FIELD="SCHEMA_TYPE"
-			REQUIRED="true" NUM_ROW="140" CONTEXT="ADWORDS_LINKS">
+		<PARAMETER NAME="SCHEMA_ADWORDS_LINKS" FIELD="SCHEMA_TYPE"
+			REQUIRED="true" NUM_ROW="150" CONTEXT="ADWORDS_LINKS">
 			<TABLE READONLY="true">
 				<COLUMN NAME="ADWORDS_LINK_ID" TYPE="id_String" COMMENT="ID of the Link"
 					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
 				<COLUMN NAME="ADWORDS_LINK_NAME" TYPE="id_String" COMMENT="Name of the Link"
-					READONLY="true" CUSTOM="true" LENGTH="128" NULLABLE="false" />
+					READONLY="true" CUSTOM="true" LENGTH="128" NULLABLE="true" />
 				<COLUMN NAME="ADWORDS_LINK_SELFLINK" TYPE="id_String" READONLY="true"
 					CUSTOM="true" LENGTH="512" NULLABLE="false" COMMENT="The Link to manage this link"/>
 				<COLUMN NAME="ADWORDS_CUSTOMER_ID" TYPE="id_String" READONLY="true" COMMENT="ID of the AdWords Account" KEY="true" 
 					CUSTOM="true" LENGTH="64" NULLABLE="false" />
 				<COLUMN NAME="ADWORDS_IS_AUTO_TAGGING_ENABLED" TYPE="id_Boolean" READONLY="true" COMMENT="Is auto tagging enabled on this AdWords Account"
-					CUSTOM="true" LENGTH="64" NULLABLE="false" />
+					CUSTOM="true" LENGTH="64" NULLABLE="true" />
 				<COLUMN NAME="ACCOUNT_ID" TYPE="id_Long" READONLY="true" COMMENT="GA Account ID" 
-					CUSTOM="true" LENGTH="22" NULLABLE="false" />
+					CUSTOM="true" LENGTH="22" NULLABLE="true" />
 				<COLUMN NAME="WEBPROPERTY_ID" TYPE="id_String" READONLY="true" COMMENT="GA Web Property ID" KEY="true" 
-					CUSTOM="true" LENGTH="32" NULLABLE="false" />
+					CUSTOM="true" LENGTH="32" NULLABLE="true" />
 				<COLUMN NAME="WEBPROPERTY_NAME" TYPE="id_String" READONLY="true"
-					CUSTOM="true" LENGTH="512" NULLABLE="false"/>
+					CUSTOM="true" LENGTH="512" NULLABLE="true"/>
 				<COLUMN NAME="PROFILE_ID" TYPE="id_Long" READONLY="true" COMMENT="GA view (Profile) ID"
-					CUSTOM="true" LENGTH="22" NULLABLE="false" KEY="true" />
+					CUSTOM="true" LENGTH="22" NULLABLE="true" KEY="true" />
 			</TABLE>
 		</PARAMETER>
 	</PARAMETERS>
@@ -469,7 +469,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-6.1-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.gamanage-6.2-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>
