@@ -109,6 +109,10 @@ public class GoogleAnalyticsManagement {
 	private int currentIndex = 0;
 	private boolean ignoreUserPermissionErrors = false;
 	
+	public GoogleAnalyticsManagement() {
+		System.out.println("Google Analytics Management Component r6.2");
+	}
+	
 	public static void putIntoCache(String key, GoogleAnalyticsManagement gam) {
 		clientCache.put(key, gam);
 	}

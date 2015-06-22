@@ -23,7 +23,7 @@ public class AdWordsLink {
 	private String webpropertyId;
 	private String webpropertyName;
 	private long accountId;
-	private boolean autoTaggingEnabled;
+	private Boolean autoTaggingEnabled;
 	private String customerId;
 	private long profileId = 0;
 	
@@ -51,10 +51,10 @@ public class AdWordsLink {
 	public void setAccountId(long accountId) {
 		this.accountId = accountId;
 	}
-	public boolean isAutoTaggingEnabled() {
+	public Boolean isAutoTaggingEnabled() {
 		return autoTaggingEnabled;
 	}
-	public void setAutoTaggingEnabled(boolean autoTaggingEnabled) {
+	public void setAutoTaggingEnabled(Boolean autoTaggingEnabled) {
 		this.autoTaggingEnabled = autoTaggingEnabled;
 	}
 	public String getCustomerId() {
