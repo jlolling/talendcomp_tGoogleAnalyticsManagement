@@ -260,7 +260,7 @@
 		// loop through all elements
 <%  if (accountRowName != null) { %>
 		if (<%=cid%>.hasCurrentAccount()) {
-		   <%=accountRowName%> = new <%=accountRowName%>Struct();
+		    <%=accountRowName%> = new <%=accountRowName%>Struct();
 			<%=accountRowName%>.ACCOUNT_ID = Long.parseLong(<%=cid%>.getCurrentAccount().getId());
 			<%=accountRowName%>.ACCOUNT_NAME = <%=cid%>.getCurrentAccount().getName();
 			<%=accountRowName%>.ACCOUNT_CREATED = <%=cid%>.getCurrentAccount().getCreated() != null ? new java.util.Date(<%=cid%>.getCurrentAccount().getCreated().getValue()) : null;

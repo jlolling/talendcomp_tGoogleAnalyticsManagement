@@ -848,18 +848,32 @@ public class GoogleAnalyticsManagement {
 		listUnsampledReports = new ArrayList<UnsampledReport>();
 		for (Profile profile : listProfiles) {
 			info("* view: " + profile.getId());
-			UnsampledReports reports = (UnsampledReports) execute(
+			com.google.api.services.analytics.Analytics.Management.UnsampledReports.List request = 
 					analyticsClient
 					.management()
 					.unsampledReports().list(
 				      profile.getAccountId(),
 				      profile.getWebPropertyId(),
-				      profile.getId()));
-			if (reports != null && reports.getItems() != null) {
-				for (UnsampledReport report : reports.getItems()) {
-					listUnsampledReports.add(report);
+				      profile.getId());
+			int startIndex = 1; // starts with 1, IMPORTANT
+			while (true) {
+				int currentCountReceivedItems = 0;
+				request.setStartIndex(startIndex);
+				UnsampledReports reports = (UnsampledReports) execute(request);
+				int totalResult = reports.getTotalResults();
+				if (reports != null && reports.getItems() != null) {
+					for (UnsampledReport report : reports.getItems()) {
+						listUnsampledReports.add(report);
+						currentCountReceivedItems++;
+					}
+					setMaxRows(listUnsampledReports.size());
+					startIndex = startIndex + currentCountReceivedItems;
+					if (startIndex > totalResult) {
+						break;
+					}
+				} else {
+					break;
 				}
-				setMaxRows(listUnsampledReports.size());
 			}
 		}
 	}
