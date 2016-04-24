@@ -4,11 +4,11 @@
 	<HEADER 
 	    PLATEFORM="ALL" 
 	    SERIAL="" 
-	    VERSION="6.3" 
+	    VERSION="7.0" 
 	    STATUS="PROD"
 		COMPATIBILITY="ALL" 
 		AUTHOR="Jan Lolling" 
-		RELEASE_DATE="20151218A"
+		RELEASE_DATE="20160424A"
 		HAS_CONDITIONAL_OUTPUTS="true"
 		STARTABLE="true">
 		<SIGNATURE />
@@ -308,7 +308,7 @@
 					CUSTOM="true" LENGTH="128" KEY="false" NULLABLE="false" COMMENT="Human readable name used in the web application of Analytics" />
 				<COLUMN NAME="COL_DESCRIPTION" TYPE="id_String" READONLY="true" COMMENT="Description of the column"
 					CUSTOM="true" LENGTH="1024" NULLABLE="true" />
-				<COLUMN NAME="COL_DATA_TYPE" TYPE="id_String" READONLY="true" COMMENT="Data type"
+				<COLUMN NAME="COL_DATA_TYPE" TYPE="id_String" READONLY="true" COMMENT="The type of data this column represents: STRING, INTEGER, PERCENT, TIME, CURRENCY, FLOAT"
 					CUSTOM="true" LENGTH="32" NULLABLE="false" />
 				<COLUMN NAME="COL_GROUP" TYPE="id_String"  COMMENT="The group where this dimension or metric can be found"
 					READONLY="true" CUSTOM="true" LENGTH="64" NULLABLE="false" />
@@ -318,6 +318,10 @@
 					CUSTOM="true" LENGTH="64" NULLABLE="true" COMMENT="In case of status is deprecated, find the replacement here"/>
 				<COLUMN NAME="COL_CALCULATION" TYPE="id_String" READONLY="true"
 					CUSTOM="true" LENGTH="512" NULLABLE="true" COMMENT="For metrics which are the result of a calculation"/>
+				<COLUMN NAME="COL_ALLOWED_IN_SEGMENTS" TYPE="id_Boolean" READONLY="true"
+					CUSTOM="true" LENGTH="1" NULLABLE="true" COMMENT="Indicates whether the column can be used in the segment query parameter"/>
+				<COLUMN NAME="COL_ADDED_IN_API_VERSION" TYPE="id_String" READONLY="true"
+					CUSTOM="true" LENGTH="16" NULLABLE="true" COMMENT="Metric or dimension exists since this API release"/>
 			</TABLE>
 		</PARAMETER>
 		<PARAMETER NAME="SCHEMA_UNSAMPLED_REPORTS" FIELD="SCHEMA_TYPE"
@@ -469,7 +473,7 @@
 	<CODEGENERATION>
 		<IMPORTS>
 			<IMPORT NAME="Google Analytics Management"
-				MODULE="jlo.talendcomp.gamanage-6.3-jar-with-dependencies.jar"
+				MODULE="jlo.talendcomp.google.metadata-7.0-jar-with-dependencies.jar"
 				REQUIRED="true" />
 		</IMPORTS>
 	</CODEGENERATION>

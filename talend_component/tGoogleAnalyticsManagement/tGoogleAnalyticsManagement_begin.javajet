@@ -57,11 +57,11 @@
 %>
     // start creating client
 <% if ("true".equals(keepClient)) {%>
-	de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement <%=cid%> = de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
+	de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement <%=cid%> = de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement.getFromCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName);
 	if (<%=cid%> == null) {
-		<%=cid%> = new de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement();
+		<%=cid%> = new de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement();
 <% } else {%>
-	    de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement <%=cid%> = new de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement();
+	    de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement <%=cid%> = new de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement();
 <% }%>
 <% if (applicationName != null && applicationName.trim().isEmpty() == false) {%>
 	    <%=cid%>.setApplicationName(<%=applicationName%>);
@@ -99,7 +99,7 @@
 	    }
 	    globalMap.put("<%=cid%>", <%=cid%>);
 <% if ("true".equals(keepClient)) {%>
-	    de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
+	    de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement.putIntoCache(<%=accountEmail%> + <%=keepClientName%> + "<%=cid%>" + jobName, <%=cid%>);
 	} // end if (<%=cid%> == null) {
 <% }%>
 
@@ -391,7 +391,7 @@
 			<%=goalEventConditionsRowName%> = null;
 		}
 <%  } %>
-<%  if (columnsRowName != null) { %>	
+<%  if (columnsRowName != null) { %>
 		if (<%=cid%>.hasCurrentColumn()) {
 		   <%=columnsRowName%> = new <%=columnsRowName%>Struct();
 		   com.google.api.services.analytics.model.Column column = <%=cid%>.getCurrentColumn();
@@ -404,6 +404,8 @@
 		   <%=columnsRowName%>.COL_STATUS = column.getAttributes().get("status");
 		   <%=columnsRowName%>.COL_REPLACED_BY = column.getAttributes().get("replacedBy");
 		   <%=columnsRowName%>.COL_CALCULATION = column.getAttributes().get("calculation");
+		   <%=columnsRowName%>.COL_ALLOWED_IN_SEGMENTS = "true".equals(column.getAttributes().get("allowedInSegments"));
+		   <%=columnsRowName%>.COL_ADDED_IN_API_VERSION = column.getAttributes().get("addedInApiVersion");
 			countColumns_<%=cid%>++;
 		} else {
 			<%=columnsRowName%> = null;
@@ -434,7 +436,7 @@
 <%  if (accountUserPermissionsRowName != null) { %>
 		if (<%=cid%>.hasCurrentAccountUserPermission()) {
 		   <%=accountUserPermissionsRowName%> = new <%=accountUserPermissionsRowName%>Struct();
-		   de.jlo.talendcomp.gamanage.AccountUserPermission p = <%=cid%>.getCurrentAccountUserPermission();
+		   de.jlo.talendcomp.google.metadata.AccountUserPermission p = <%=cid%>.getCurrentAccountUserPermission();
 		   <%=accountUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
 		   <%=accountUserPermissionsRowName%>.EMAIL = p.getEmail();
 		   <%=accountUserPermissionsRowName%>.PERMISSIONS_LOCAL = p.getLocalPermissions();
@@ -447,7 +449,7 @@
 <%  if (webpropertyUserPermissionsRowName != null) { %>
 		if (<%=cid%>.hasCurrentWebPropertyUserPermission()) {
 		   <%=webpropertyUserPermissionsRowName%> = new <%=webpropertyUserPermissionsRowName%>Struct();
-		   de.jlo.talendcomp.gamanage.WebPropertyUserPermission p = <%=cid%>.getCurrentWebPropertyUserPermission();
+		   de.jlo.talendcomp.google.metadata.WebPropertyUserPermission p = <%=cid%>.getCurrentWebPropertyUserPermission();
 		   <%=webpropertyUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
 		   <%=webpropertyUserPermissionsRowName%>.WEBPROPERTY_ID = p.getWebPropertyId();
 		   <%=webpropertyUserPermissionsRowName%>.EMAIL = p.getEmail();
@@ -461,7 +463,7 @@
 <%  if (profileUserPermissionsRowName != null) { %>
 		if (<%=cid%>.hasCurrentProfileUserPermission()) {
 		   <%=profileUserPermissionsRowName%> = new <%=profileUserPermissionsRowName%>Struct();
-		   de.jlo.talendcomp.gamanage.ProfileUserPermission p = <%=cid%>.getCurrentProfileUserPermission();
+		   de.jlo.talendcomp.google.metadata.ProfileUserPermission p = <%=cid%>.getCurrentProfileUserPermission();
 		   <%=profileUserPermissionsRowName%>.ACCOUNT_ID = p.getAccountId();
 		   <%=profileUserPermissionsRowName%>.WEBPROPERTY_ID = p.getWebPropertyId();
 		   <%=profileUserPermissionsRowName%>.PROFILE_ID = p.getProfileId();
@@ -483,7 +485,7 @@
 		   <%=customDatasourceRowName%>.CDS_NAME = d.getName();
 		   <%=customDatasourceRowName%>.CDS_TYPE = d.getType();
 		   <%=customDatasourceRowName%>.CDS_IMPORT_BEHAVIOR = d.getImportBehavior();
-		   <%=customDatasourceRowName%>.CDS_LINKED_PROFILES = de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement.buildChain(d.getProfilesLinked(),",");
+		   <%=customDatasourceRowName%>.CDS_LINKED_PROFILES = de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement.buildChain(d.getProfilesLinked(),",");
 		   <%=customDatasourceRowName%>.CDS_CREATED = d.getCreated() != null ? new java.util.Date(d.getCreated().getValue()) : null;
 		   <%=customDatasourceRowName%>.CDS_UPDATED = d.getUpdated() != null ? new java.util.Date(d.getUpdated().getValue()) : null;
 			countCustomDataSources_<%=cid%>++;
@@ -494,7 +496,7 @@
 <%  if (adWordsLinksRowName != null) { %>
 		if (<%=cid%>.hasCurrentAdWordsLink()) {
 		   <%=adWordsLinksRowName%> = new <%=adWordsLinksRowName%>Struct();
-		   de.jlo.talendcomp.gamanage.AdWordsLink link = <%=cid%>.getCurrentAdWordsLink();
+		   de.jlo.talendcomp.google.metadata.AdWordsLink link = <%=cid%>.getCurrentAdWordsLink();
 		   <%=adWordsLinksRowName%>.ADWORDS_LINK_ID = link.getId();
 		   <%=adWordsLinksRowName%>.ADWORDS_LINK_NAME = link.getName();
 		   <%=adWordsLinksRowName%>.ADWORDS_LINK_SELFLINK = link.getSelfLink();

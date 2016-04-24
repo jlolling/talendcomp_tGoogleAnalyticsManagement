@@ -6,7 +6,7 @@ import com.google.api.services.analytics.model.Profile;
 import com.google.api.services.analytics.model.Segment;
 import com.google.api.services.analytics.model.Webproperty;
 
-import de.jlo.talendcomp.gamanage.GoogleAnalyticsManagement;
+import de.jlo.talendcomp.google.metadata.GoogleAnalyticsManagement;
 
 public class TestGoogleAnalyticsManagement {
 
