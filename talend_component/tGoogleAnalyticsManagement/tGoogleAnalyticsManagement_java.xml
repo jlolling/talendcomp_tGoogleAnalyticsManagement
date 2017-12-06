@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <COMPONENT> 
-  <HEADER PLATEFORM="ALL" SERIAL="" VERSION="7.0" STATUS="PROD" COMPATIBILITY="ALL" AUTHOR="Jan Lolling" RELEASE_DATE="20170108" HAS_CONDITIONAL_OUTPUTS="true" STARTABLE="true"> 
+  <HEADER PLATEFORM="ALL" SERIAL="" VERSION="7.1" STATUS="PROD" COMPATIBILITY="ALL" AUTHOR="Jan Lolling" RELEASE_DATE="20171017" HAS_CONDITIONAL_OUTPUTS="true" STARTABLE="true"> 
     <SIGNATURE/> 
   </HEADER>  
   <FAMILIES> 
@@ -266,14 +266,14 @@
     <PARAMETER FIELD="TEXT" NAME="WAIT_TIME_BETWEEN_REQUESTS" NUM_ROW="45"> 
       <DEFAULT>800</DEFAULT> 
     </PARAMETER>  
-    <PARAMETER NAME="RELEASE_LABEL" FIELD="LABEL" COLOR="0;0;0" NUM_ROW="900">
-      <DEFAULT>Release: 7.0 build at: 20170108</DEFAULT>
+    <PARAMETER NAME="RELEASE_LABEL_20171017" FIELD="LABEL" COLOR="0;0;0" NUM_ROW="900">
+      <DEFAULT>Release: 7.1 build at: 20171017</DEFAULT>
     </PARAMETER>
   </ADVANCED_PARAMETERS>  
   <CODEGENERATION> 
     <IMPORTS> 
-      <IMPORT NAME="cimt-talendcomp-google-analytics-metadata" MODULE="cimt-talendcomp-google-analytics-metadata-7.0.jar" REQUIRED="true"/>
-      <IMPORT NAME="google-api-services-analytics-v3-rev134" MODULE="google-api-services-analytics-v3-rev134-1.22.0.jar" REQUIRED="true"/>
+      <IMPORT NAME="jlo-talendcomp-google-analytics-metadata" MODULE="jlo-talendcomp-google-analytics-metadata-7.1.jar" REQUIRED="true"/>
+      <IMPORT NAME="google-api-services-analytics-v3-rev142" MODULE="google-api-services-analytics-v3-rev142-1.22.0.jar" REQUIRED="true"/>
       <IMPORT NAME="google-api-client" MODULE="google-api-client-1.22.0.jar" REQUIRED="true"/>
       <IMPORT NAME="google-oauth-client" MODULE="google-oauth-client-1.22.0.jar" REQUIRED="true"/>
       <IMPORT NAME="guava-jdk5" MODULE="guava-jdk5-17.0.jar" REQUIRED="true"/>

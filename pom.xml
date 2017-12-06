@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.cimt.talendcomp.google</groupId>
-	<artifactId>cimt-talendcomp-google-analytics-metadata</artifactId>
+	<artifactId>jlo-talendcomp-google-analytics-metadata</artifactId>
 	<name>GoogleAnalytics Talend Component</name>
 	<repositories>
 		<repository>
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-analytics</artifactId>
-			<version>v3-rev134-1.22.0</version>
+			<version>v3-rev142-1.22.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
@@ -63,29 +63,27 @@
 	</properties>
 	<organization>
 		<name>Jan Lolling</name>
-		<url>http://www.jan-lolling.de</url>
+		<url>http://jan-lolling.de</url>
 	</organization>
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.3</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>de.cimt.talendcomp</groupId>
 				<artifactId>cimt-talendcomp-maven-plugin</artifactId>
-				<version>1.2</version>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<configuration>
 							<componentName>tGoogleAnalyticsManagement</componentName>
 						</configuration>
-						<phase>install</phase>
 						<goals>
 							<goal>component</goal>
 						</goals>
@@ -94,5 +92,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<version>7.0</version>
+	<version>7.1</version>
 </project>
