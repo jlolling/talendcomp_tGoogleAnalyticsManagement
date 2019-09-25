@@ -14,12 +14,12 @@
 		<dependency>
 			<groupId>com.google.apis</groupId>
 			<artifactId>google-api-services-analytics</artifactId>
-			<version>v3-rev142-1.22.0</version>
+			<version>v3-rev20190807-1.30.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.http-client</groupId>
 			<artifactId>google-http-client-jackson2</artifactId>
-			<version>1.22.0</version>
+			<version>1.32.1</version>
 	      <exclusions>
 	        <exclusion>
 	          <artifactId>jackson-core</artifactId>
@@ -38,18 +38,18 @@
 	    <dependency>
 	      <groupId>com.fasterxml.jackson.core</groupId>
 	      <artifactId>jackson-databind</artifactId>
-	      <version>2.7.5</version>
+	      <version>2.9.8</version>
 	      <scope>compile</scope>
 	    </dependency>
    		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.3.6</version>
+			<version>4.5.10</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.oauth-client</groupId>
 			<artifactId>google-oauth-client-jetty</artifactId>
-			<version>1.22.0</version>
+			<version>1.30.3</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -92,5 +92,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<version>7.1</version>
+	<version>7.2</version>
 </project>
